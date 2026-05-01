@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   // output: "export",
   basePath: basePath,
   assetPrefix: basePath ? basePath + "/" : undefined,
-  distDir: "dist",
+  // distDir: "dist",
   images: {
     unoptimized: true,
   },
