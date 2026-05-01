@@ -1,6 +1,6 @@
 import { CustomLine } from "@/context/analyze"
 import { move, moveRating, square } from "@/engine/stockfish"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import Comments, { FormatEval } from "./comments"
 import { WHITE } from "chess.js"
 import GameChart from "../gameChart"
