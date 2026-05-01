@@ -136,7 +136,7 @@ export default function Menu() {
             {pageState === 'analyze' || pageState === 'analyzeCustom' || pageState === 'playBots' ? (
                 <div className="flex-col gap-1 pb-1 items-center hidden vertical:flex">
                     <hr className="border-neutral-600 w-[85%]" />
-                    <GameButtons />
+                    <GameButtons showPlayPause={pageState !== 'playBots'} />
                 </div>
             ) : ''}
         </div>
