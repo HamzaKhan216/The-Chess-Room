@@ -95,7 +95,7 @@ export default function Summary(props: { moves: move[], container: HTMLElement, 
             setTimeout(() => {
                 setTab('moves');
             }, 1500);
-        } catch (error) {
+        } catch {
             alert("AI Review failed. Check console for details.");
         } finally {
             setLoadingAI(false);

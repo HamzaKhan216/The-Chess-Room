@@ -84,7 +84,7 @@ export default function PlayBots() {
                         className="group flex flex-row items-center gap-4 p-4 rounded-borderRoundness bg-backgroundBoxBoxDisabled border border-neutral-800 hover:border-highlightBrilliant transition-all text-left shadow-lg hover:shadow-highlightBrilliant/10"
                     >
                         <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-neutral-700 group-hover:border-highlightBrilliant transition-colors flex-shrink-0">
-                            <img src={bot.avatar} alt={bot.name} className="w-full h-full object-cover" />
+                            <Image src={bot.avatar} alt={bot.name} fill className="object-cover" />
                         </div>
                         <div className="flex flex-col gap-1 flex-grow">
                             <div className="flex flex-row justify-between items-center">
@@ -98,7 +98,7 @@ export default function PlayBots() {
             </div>
 
             <div className="mt-auto p-4 rounded-lg bg-highlightBrilliant/5 border border-highlightBrilliant/20 italic text-xs text-center text-foregroundGrey">
-                "The AI Coach will provide live feedback based on the bot's personality!"
+                &quot;The AI Coach will provide live feedback based on the bot&apos;s personality!&quot;
             </div>
         </div>
     )
