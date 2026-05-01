@@ -7,7 +7,8 @@ import Clock from "./clock"
 import Name from "./name"
 import Evaluation from "./evaluation"
 import { AnalyzeContext, CustomLine } from "@/context/analyze"
-import { formatSquare, getCastle, invertColor, move, openings, parseMove, parsePGN, parsePosition, prepareStockfish, result, square } from "@/engine/stockfish"
+import { AIExplanationRequest, getAIExplanations } from "@/engine/aiCoach"
+import { analyze, deformatSquare, formatSquare, getCastle, invertColor, move, openings, parseMove, parsePGN, parsePosition, prepareStockfish, result, square } from "@/engine/stockfish"
 import { Chess, PieceSymbol, WHITE } from "chess.js"
 import { getAproxMemory, wasmSupported, wasmThreadsSupported } from "@/engine/wasmChecks"
 import { pushPageWarning, pushPageError } from "@/components/errors/pageErrors"
@@ -55,9 +56,9 @@ export function getMoves(game: move[], moveNumber: number, customLine: CustomLin
 
 function getArrows(arrows: AllGameArrows, moveNumber: number, customLine: CustomLine) {
     if (customLine.moveNumber < 0) {
-        return arrows[moveNumber]
+        return arrows[moveNumber] || []
     }
-    return customLine.arrows[customLine.moveNumber]
+    return customLine.arrows[customLine.moveNumber] || []
 }
 
 function getCustomResult(move?: move): result {
@@ -118,6 +119,7 @@ export default function Game() {
     const intervalRef = useRef<NodeJS.Timeout>()
     const tabRef = useRef(tab)
 
+    const lastSpokenMoveRef = useRef<number>(-1)
     const dragRef = useRef(drag)
 
     const engineWorkerRef = useRef<Worker | null>(null)
@@ -174,26 +176,230 @@ export default function Game() {
     }, [])
 
     useEffect(() => {
+        if (pageState === 'playBots' && game.length === 1) {
+            const stockfish = engineWorkerRef.current
+            if (stockfish) {
+                stockfish.postMessage("ucinewgame")
+                stockfish.postMessage("isready")
+            }
+        }
+    }, [pageState, game.length])
+
+    useEffect(() => {
         setAnimation(false)
     }, [moveNumber, customLine.moveNumber])
+
+    const [botDifficulty] = analyzeContext.botDifficulty
+    const [groqKey] = configContext.groqApiKey
+    const [geminiKey] = configContext.geminiApiKey
+    const [aiProvider] = configContext.aiProvider
+    const [aiMode] = configContext.aiMode
+    const [autoAiReview] = configContext.autoAiReview
+
+    useEffect(() => {
+        if (pageState !== 'playBots') return
+        if (analyzingMove) return
+        
+        const lastMove = game[moveNumber]
+        if (!lastMove) return
+
+        const chess = new Chess(lastMove.fen)
+        if (chess.isGameOver()) return
+
+        // If it's the bot's turn
+        const isBotTurn = chess.turn() === (white ? 'b' : 'w')
+        
+        if (isBotTurn) {
+            const timer = setTimeout(async () => {
+                const stockfish = engineWorkerRef.current
+                if (!stockfish) return
+
+                stockfish.postMessage(`setoption name Skill Level value ${botDifficulty}`)
+                
+                const signal = analyzeController.signal
+                const { bestMove, bestMoveCoronation } = await analyze(stockfish, lastMove.fen, depth, signal)
+                
+                if (bestMove) {
+                    const from = deformatSquare(bestMove[0])
+                    const to = deformatSquare(bestMove[1])
+                    
+                    // Reset skill level so the UI analysis is GM level
+                    stockfish.postMessage(`setoption name Skill Level value 20`)
+                    analyzeMove(lastMove.fen, { from, to, promotion: bestMoveCoronation }, lastMove.sacrifice ?? false, lastMove.previousStaticEvals ?? [], true, lastMove.bestMoveSan)
+                }
+            }, 1000)
+
+            return () => clearTimeout(timer)
+        }
+    }, [game, moveNumber, pageState, analyzingMove, white, botDifficulty])
+
+    const requestedAiMoves = useRef<Set<number>>(new Set())
+
+    useEffect(() => {
+        if (pageState !== 'playBots' || analyzingMove || moveNumber === 0) return
+        
+        const lastMove = game[moveNumber]
+        if (!lastMove || lastMove.aiComment) return
+
+        if (requestedAiMoves.current.has(moveNumber)) return
+        requestedAiMoves.current.add(moveNumber)
+
+        const botName = players.find(p => p.name !== "You")?.name || players[1].name
+        const rating = lastMove.moveRating || 'good'
+        const stdComment = lastMove.comment || ''
+
+        const botColor = players[0].name !== "You" ? 'w' : 'b'
+        // lastMove.color is the color to move NEXT.
+        // Therefore, if lastMove.color !== botColor, the bot just finished its move.
+        const isBotMove = lastMove.color !== botColor
+
+        let hardcodedComment = stdComment
+        
+        if (botName.includes("Jimmy")) {
+            if (isBotMove) {
+                if (rating === "blunder") hardcodedComment = `Oops! I think I messed up. ${stdComment}`
+                else if (rating === "mistake") hardcodedComment = `Ah, maybe that wasn't my best move. ${stdComment}`
+                else if (rating === "inaccuracy") hardcodedComment = `I probably could have done better there. ${stdComment}`
+                else if (rating === "best") hardcodedComment = `Haha, I played the best move! ${stdComment}`
+                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Wow, look at me go! ${stdComment}`
+                else hardcodedComment = `Not bad for a casual player! ${stdComment}`
+            } else {
+                if (rating === "blunder") hardcodedComment = `Oops! That looks like a blunder! ${stdComment}`
+                else if (rating === "mistake") hardcodedComment = `Careful! That might be a mistake. ${stdComment}`
+                else if (rating === "inaccuracy") hardcodedComment = `Hmm, maybe there was a better move. ${stdComment}`
+                else if (rating === "best") hardcodedComment = `Great move! ${stdComment}`
+                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Wow, amazing move! ${stdComment}`
+                else hardcodedComment = `Nice! ${stdComment}`
+            }
+        } else if (botName.includes("Scarlett")) {
+            if (isBotMove) {
+                if (rating === "blunder") hardcodedComment = `Argh! A rare miscalculation. ${stdComment}`
+                else if (rating === "mistake") hardcodedComment = `Whatever, I'll still crush you. ${stdComment}`
+                else if (rating === "inaccuracy") hardcodedComment = `Even my inaccuracies are aggressive. ${stdComment}`
+                else if (rating === "best") hardcodedComment = `See? I'm unstoppable. ${stdComment}`
+                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Just try and defend against that! ${stdComment}`
+                else hardcodedComment = `The attack continues. ${stdComment}`
+            } else {
+                if (rating === "blunder") hardcodedComment = `What were you thinking?! Huge blunder! ${stdComment}`
+                else if (rating === "mistake") hardcodedComment = `Terrible mistake. I will punish that. ${stdComment}`
+                else if (rating === "inaccuracy") hardcodedComment = `Weak move. ${stdComment}`
+                else if (rating === "best") hardcodedComment = `I suppose that's the best move. ${stdComment}`
+                else if (rating === "great" || rating === "brilliant") hardcodedComment = `You got lucky with that brilliant move. ${stdComment}`
+                else hardcodedComment = `Interesting... ${stdComment}`
+            }
+        } else if (botName.includes("Magnus")) {
+            if (isBotMove) {
+                if (rating === "blunder") hardcodedComment = `A mouse slip in my head. Unbelievable. ${stdComment}`
+                else if (rating === "mistake") hardcodedComment = `I'm playing too fast. ${stdComment}`
+                else if (rating === "inaccuracy") hardcodedComment = `Suboptimal, but it complicates the position. ${stdComment}`
+                else if (rating === "best") hardcodedComment = `As expected from a World Champion. ${stdComment}`
+                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Pure intuition. ${stdComment}`
+                else hardcodedComment = `Improving my position. ${stdComment}`
+            } else {
+                if (rating === "blunder") hardcodedComment = `A complete hallucination. Blunder. ${stdComment}`
+                else if (rating === "mistake") hardcodedComment = `Positional mistake. You're losing your grip. ${stdComment}`
+                else if (rating === "inaccuracy") hardcodedComment = `Slight inaccuracy. I'll squeeze this advantage. ${stdComment}`
+                else if (rating === "best") hardcodedComment = `The most principled continuation. ${stdComment}`
+                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Excellent tactical vision. ${stdComment}`
+                else hardcodedComment = `Solid play. ${stdComment}`
+            }
+        }
+
+        setGame(prev => {
+            const newGame = [...prev]
+            newGame[moveNumber] = { ...newGame[moveNumber], aiComment: hardcodedComment }
+            return newGame
+        })
+
+    }, [game, moveNumber, pageState, analyzingMove])
 
     useEffect(() => {
         tabRef.current = tab
     }, [tab])
 
+    const ttsEnabledRef = useRef(configContext.ttsEnabled[0])
+    const ttsSpeakingRef = useRef(configContext.ttsSpeaking[0])
+
     useEffect(() => {
-        clearInterval(intervalRef.current)
-        if (playing) {
-            function nextMove() {
-                gameController.forward()
-            }
-            nextMove()
-            intervalRef.current = setInterval(nextMove, 1000)
-        } else {
-            clearInterval(intervalRef.current)
+        ttsEnabledRef.current = configContext.ttsEnabled[0]
+        ttsSpeakingRef.current = configContext.ttsSpeaking[0]
+    }, [configContext.ttsEnabled[0], configContext.ttsSpeaking[0]])
+
+    useEffect(() => {
+        if (!playing) {
+            if (intervalRef.current) clearTimeout(intervalRef.current)
+            return
         }
 
-        return () => clearInterval(intervalRef.current)
+        function playLoop() {
+            // Check both our state and the browser's native state
+            const isSpeaking = ttsSpeakingRef.current || window.speechSynthesis.speaking;
+
+            if (ttsEnabledRef.current && isSpeaking) {
+                // If speaking, check again sooner (every 100ms) to move as soon as it ends
+                intervalRef.current = setTimeout(playLoop, 100)
+                return
+            }
+
+            if (ttsEnabledRef.current && lastSpokenMoveRef.current !== moveNumber) {
+                const currentMove = game[moveNumber];
+                const textToSpeak = currentMove?.aiComment || currentMove?.comment;
+                if (textToSpeak) {
+                    lastSpokenMoveRef.current = moveNumber;
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    
+                    const botName = players.find(p => p.name !== "You")?.name || "";
+                    const voices = window.speechSynthesis.getVoices();
+                    let voice;
+
+                    if (botName.includes("Jimmy")) {
+                        voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('David') || v.name.includes('Alex') || v.name.includes('Male')));
+                    } else if (botName.includes("Scarlett")) {
+                        voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Female')));
+                    } else if (botName.includes("Magnus")) {
+                        voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('George') || v.name.includes('Daniel') || v.name.includes('UK') || v.name.includes('GB')));
+                    }
+
+                    if (!voice) {
+                        // Fallback to high quality voices if available
+                        voice = voices.find(v => v.name === 'Google US English' || v.name.includes('Natural') || v.name.includes('Premium'));
+                    }
+
+                    if (voice) {
+                        utterance.voice = voice;
+                    }
+                    utterance.onstart = () => {
+                        configContext.ttsSpeaking[1](true);
+                        ttsSpeakingRef.current = true;
+                    };
+                    utterance.onend = () => {
+                        configContext.ttsSpeaking[1](false);
+                        ttsSpeakingRef.current = false;
+                    };
+                    utterance.onerror = () => {
+                        configContext.ttsSpeaking[1](false);
+                        ttsSpeakingRef.current = false;
+                    };
+                    window.speechSynthesis.speak(utterance);
+                    intervalRef.current = setTimeout(playLoop, 100);
+                    return;
+                }
+            }
+
+            gameController.forward()
+            // Wait 1 second before the next move
+            intervalRef.current = setTimeout(playLoop, 1000)
+        }
+
+        // Start the loop with a 1s delay for the first move (to allow current speech to start)
+        intervalRef.current = setTimeout(playLoop, 1000)
+
+        return () => {
+            if (intervalRef.current) clearTimeout(intervalRef.current)
+        }
     }, [playing])
 
     function createArrowsObject(length: number) {
@@ -219,10 +425,11 @@ export default function Game() {
 
     function pushArrow(currentArrow: arrow) {
         if (customLine.moveNumber < 0) {
-            const repeatedIndex = arrows[moveNumber].findIndex(arrow => JSON.stringify(arrow) === JSON.stringify(currentArrow))
+            const currentArrows = arrows[moveNumber] || []
+            const repeatedIndex = currentArrows.findIndex(arrow => JSON.stringify(arrow) === JSON.stringify(currentArrow))
             const isRepeated = repeatedIndex !== -1
 
-            const newArrows = [...arrows[moveNumber]]
+            const newArrows = [...currentArrows]
 
             if (isRepeated) {
                 newArrows.splice(repeatedIndex, 1)
@@ -232,10 +439,11 @@ export default function Game() {
 
             setArrows(prev => {return {...prev, [moveNumber]: newArrows}})
         } else {
-            const repeatedIndex = customLine.arrows[customLine.moveNumber].findIndex(arrow => JSON.stringify(arrow) === JSON.stringify(currentArrow))
+            const currentArrows = customLine.arrows[customLine.moveNumber] || []
+            const repeatedIndex = currentArrows.findIndex(arrow => JSON.stringify(arrow) === JSON.stringify(currentArrow))
             const isRepeated = repeatedIndex !== -1
 
-            const newArrows = [...customLine.arrows[customLine.moveNumber]]
+            const newArrows = [...currentArrows]
 
             if (isRepeated) {
                 newArrows.splice(repeatedIndex, 1)
@@ -586,29 +794,49 @@ export default function Game() {
         setCustomLine(prev => ({ moveNumber: prev.moveNumber + 1, moves: [...prev.moves.slice(0, prev.moveNumber + 1), unanalyzedMove], arrows: sliceCustomArrows(prev.arrows, prev.moveNumber + 1) }))
         setAnalyzingMove(true)
 
-        if (data.format === "fen") setPageState("analyzeCustom")
+        if (data.format === "fen") {
+            if (pageState !== 'playBots') setPageState("analyzeCustom")
+        }
 
-        const move = await new Promise<move>(async (resolve, reject) => {
-            const signal = analyzeController.signal
+        try {
+            const move = await new Promise<move>(async (resolve, reject) => {
+                const signal = analyzeController.signal
 
-            function handleAbort() {
-                reject(new Error('canceled'))
-                signal.removeEventListener('abort', handleAbort)
+                function handleAbort() {
+                    reject(new Error('canceled'))
+                    signal.removeEventListener('abort', handleAbort)
+                }
+
+                const stockfish = engineWorkerRef.current
+                if (!stockfish) return
+
+                const chess = new Chess(previousFen)
+                const move = chess.move(movement)
+
+                const analyzedMovement = await parseMove(stockfish, depth, move, chess, previousStaticEvals, previousBestMoveSan, previousSacrifice, openings, handleAbort, signal)
+                resolve(analyzedMovement)
+            })
+
+            setAnimation(false)
+            if (pageState === 'playBots') {
+                setGame(prev => {
+                    const existing = prev[moveNumber + 1] || {}
+                    const merged = { ...existing, ...move }
+                    const newGame = [...prev]
+                    newGame[moveNumber + 1] = merged as move
+                    return newGame
+                })
+                setArrows(prev => ({ ...prev, [moveNumber + 1]: [] }))
+                setMoveNumber(prev => prev + 1)
+                setCustomLine({ moveNumber: -1, moves: [], arrows: {} })
+            } else {
+                setCustomLine(prev => ({ ...prev, moveNumber: prev.moveNumber, moves: [...prev.moves.slice(0, prev.moveNumber), move] }))
             }
-
-            const stockfish = engineWorkerRef.current
-            if (!stockfish) return
-
-            const chess = new Chess(previousFen)
-            const move = chess.move(movement)
-
-            const analyzedMovement = await parseMove(stockfish, depth, move, chess, previousStaticEvals, previousBestMoveSan, previousSacrifice, openings, handleAbort, signal)
-            resolve(analyzedMovement)
-        })
-
-        setAnimation(false)
-        setAnalyzingMove(false)
-        setCustomLine(prev => ({ ...prev, moveNumber: prev.moveNumber, moves: [...prev.moves.slice(0, prev.moveNumber), move] }))
+        } catch (e) {
+            console.error("Analyze move error:", e)
+        } finally {
+            setAnalyzingMove(false)
+        }
     }
 
     function formatTime(seconds: number): string {
@@ -647,6 +875,26 @@ export default function Game() {
         return noTime
     }
 
+    /**
+     * Finds the most recent remaining clock time for a given color by scanning
+     * backwards through the game array up to the current moveNumber.
+     * Move color in the move object is the color TO MOVE NEXT (after the move),
+     * so a White move has color='b' (Black to move next).
+     * Returns undefined when no %clk data is present in the PGN.
+     */
+    function getPlayerClock(isWhite: boolean): number | undefined {
+        // In the move object, color = the side to move NEXT.
+        // A white piece move → color === 'b'. A black piece move → color === 'w'.
+        const moveColor = isWhite ? 'b' : 'w'
+        for (let i = moveNumber; i >= 1; i--) {
+            const m = game[i]
+            if (m?.color === moveColor && m?.clockTime !== undefined) {
+                return m.clockTime
+            }
+        }
+        return undefined
+    }
+
     return (
     <div className="flex flex-col gap-[6px]">
         <div ref={gameRef} tabIndex={0} style={{ gap: gap }} className="h-full flex navTop:flex-row flex-col outline-none">
@@ -656,7 +904,7 @@ export default function Game() {
             <div ref={componentRef} style={{ gap: gap }} className="h-full flex flex-col justify-start">
                 <div style={{ width: boardSize }} className="flex flex-row justify-between">
                     <Name materialAdvantage={materialAdvantage} captured={captured[white ? 'black' : 'white']} white={!white}>{`${players[white ? 1 : 0].name} ${players[white ? 1 : 0].elo !== 'NOELO' ? `(${players[white ? 1 : 0].elo})` : ''}`}</Name>
-                    <Clock white={!white} colorMoving={game[moveNumber]?.color}>{formatTime(time)}</Clock>
+                    <Clock white={!white} colorMoving={game[moveNumber]?.color}>{formatTime(getPlayerClock(!white) ?? time)}</Clock>
                 </div>
                 <Board
                     setPlaying={setPlaying}
@@ -692,7 +940,7 @@ export default function Game() {
                 />
                 <div style={{ width: boardSize }} className="flex flex-row justify-between">
                     <Name materialAdvantage={materialAdvantage} captured={captured[white ? 'white' : 'black']} white={white}>{`${players[white ? 0 : 1].name} ${players[white ? 0 : 1].elo !== 'NOELO' ? `(${players[white ? 0 : 1].elo})` : ''}`}</Name>
-                    <Clock white={white} colorMoving={game[moveNumber]?.color}>{formatTime(time)}</Clock>
+                    <Clock white={white} colorMoving={game[moveNumber]?.color}>{formatTime(getPlayerClock(white) ?? time)}</Clock>
                 </div>
             </div>
         </div>

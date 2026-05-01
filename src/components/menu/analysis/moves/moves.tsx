@@ -98,30 +98,12 @@ export default function Moves(props: { moves: move[], overallGameComment: string
 
     useEffect(scrollToCurrentMove, [])
 
-    function resizeMoves() {
-        if (!componentRef.current || !commentsRef.current || !moveListRef.current || !gameChartRef.current) return
-
-        const totalHeight = componentRef.current.offsetHeight
-
-        const commentsHeight = commentsRef.current.offsetHeight
-        const gameChartHeight = gameChartRef.current.offsetHeight
-
-        const newMovesHeight = totalHeight - (commentsHeight + gameChartHeight)
-
-        setMovesHeight(newMovesHeight)
-        moveListRef.current.style.height = newMovesHeight ? `${newMovesHeight}px` : '100%'
-    }
-
     useEffect(() => {
-        resizeMoves()
-
-        window.addEventListener('resize', resizeMoves)
-
-        return () => window.removeEventListener('resize', resizeMoves)
+        // resize logic removed in favor of flexbox layout
     }, [])
 
     useEffect(() => {
-        resizeMoves()
+        // resize logic removed
     }, [moveNumber])
 
     function handleMoveClick(number: number) {
@@ -142,10 +124,12 @@ export default function Moves(props: { moves: move[], overallGameComment: string
 
     const { previousMove, move } = getMoves(moves, moveNumber, customLine, returnedToNormalGame)
 
+    console.log("Current Move in UI:", { index: moveNumber, move, aiComment: move?.aiComment, analyzingMove });
+
     return (
         <div ref={componentRef} className="flex flex-col gap-3 items-center h-full">
             <div ref={commentsRef} className="w-full flex flex-col items-center">
-                <Comments comment={analyzingMove ? previousMove?.comment : move?.comment} rating={analyzingMove ? previousMove?.moveRating : move?.moveRating} moveSan={analyzingMove ? previousMove?.san :move?.san} evaluation={analyzingMove ? previousMove?.previousStaticEvals?.[0] ?? ["cp", "0"] : move?.previousStaticEvals?.[0] ?? ["cp", "0"]} white={analyzingMove ? previousMove?.color === WHITE : move?.color === WHITE} overallGameComment={overallGameComment} />
+                <Comments aiComment={analyzingMove ? previousMove?.aiComment : move?.aiComment} comment={analyzingMove ? previousMove?.comment : move?.comment} rating={analyzingMove ? previousMove?.moveRating : move?.moveRating} moveSan={analyzingMove ? previousMove?.san :move?.san} evaluation={analyzingMove ? previousMove?.previousStaticEvals?.[0] ?? ["cp", "0"] : move?.previousStaticEvals?.[0] ?? ["cp", "0"]} white={analyzingMove ? previousMove?.color === WHITE : move?.color === WHITE} overallGameComment={overallGameComment} moveNumber={moveNumber} />
             </div>
             <div style={{ display: previousMove ? '' : 'none' }} className="bg-backgroundBoxDarker w-full">
                 <div className="w-[85%] font-extrabold text-highlightBest mx-auto flex flex-row items-center gap-2 py-2">
@@ -154,7 +138,7 @@ export default function Moves(props: { moves: move[], overallGameComment: string
                     {previousMove?.bestMoveSan} is best
                 </div>
             </div>
-            <ul style={{height: (movesHeight || '100%')}} ref={moveListRef} className="gap-y-1 overflow-y-auto overflow-x-hidden w-[85%] select-none flex flex-col">
+            <ul ref={moveListRef} className="flex-1 gap-y-1 overflow-y-auto overflow-x-hidden w-[85%] select-none flex flex-col min-h-0">
                 {getTurns().map((turn, i) => (
                     <li key={i} className="flex flex-row text-foregroundGrey items-center w-full">
                         <span className="font-bold w-[33px]">{turn[0]}.</span>
@@ -186,7 +170,7 @@ export default function Moves(props: { moves: move[], overallGameComment: string
                     </li>
                 ))}
             </ul>
-            <div ref={gameChartRef}>
+            <div ref={gameChartRef} className="shrink-0 w-full flex justify-center pb-2">
                 <GameChart container={container} moves={moves} moveNumber={moveNumber} setMoveNumber={setMoveNumber} setAnimation={setAnimation} setForward={setForward} />
             </div>
         </div>

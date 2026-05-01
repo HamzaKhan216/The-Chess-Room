@@ -5,7 +5,7 @@ import { createContext, useState, Dispatch, SetStateAction } from 'react'
 export interface PageErrorProps {
     title: string
     description?: string
-    type: 'error' |'warning'
+    type: 'error' |'warning' | 'success'
     errorKey: number
 }
 

@@ -15,6 +15,7 @@ import Summary from "./analysis/summary/summary"
 import Moves from "./analysis/moves/moves"
 import getOverallGameComment from "./analysis/moves/overallGameComment"
 import SelectLichessOrgGame from "./analyze/selectLichessOrg"
+import PlayBots from "./play/playBots"
 
 export type platform = "chessCom" | "lichessOrg"
 
@@ -41,6 +42,7 @@ export default function Menu() {
     const [customLine, setCustomLine] = analyzeContext.customLine
     const [returnedToNormalGame] = analyzeContext.returnedToNormalGame
     const [depth, setDepth] = analyzeContext.depth
+    const [botDifficulty, setBotDifficulty] = analyzeContext.botDifficulty
 
     const menuRef = useRef<HTMLDivElement>(null)
 
@@ -60,6 +62,9 @@ export default function Menu() {
                 break
             case 'analyzeCustom':
                 setTab('moves')
+                break
+            case 'playBots':
+                setTab('playBots')
                 break
         }
     }, [pageState])
@@ -100,8 +105,9 @@ export default function Menu() {
     const tabs: Tab[] = [
         { label: `Analize${pageState === 'analyze' || pageState === 'analyzeCustom' ? ' new' : ''} Game`, state: "analyze", icon: (className: string) => <Lens class={className} size={20} />, show: true, onClick: () => { if (pageState === 'analyze' || pageState === 'analyzeCustom') setData({ format: "fen", string: "" }); if (tab === 'selectGame') stopSelecting() } },
         { label: "Choose Game", state: "selectGame", icon: (className: string) => <Pawn class={className} size={20} />, show: tab === 'selectGame', onClick: () => { } },
-        { label: "Summary", state: "summary", icon: (className: string) => <Star class={className} size={20} />, show: pageState === 'analyze', onClick: () => { } },
-        { label: "Moves", state: 'moves', icon: (className: string) => <BoardIcon class={className} size={20} />, show: pageState === 'analyze' || pageState === "analyzeCustom", onClick: () => { } }
+        { label: "Play Bots", state: "playBots", icon: (className: string) => <BoardIcon class={className} size={20} />, show: true, onClick: () => { setTab('playBots') } },
+        { label: "Summary", state: "summary", icon: (className: string) => <Star class={className} size={20} />, show: pageState === 'analyze' || pageState === 'playBots', onClick: () => { } },
+        { label: "Moves", state: 'moves', icon: (className: string) => <BoardIcon class={className} size={20} />, show: pageState === 'analyze' || pageState === "analyzeCustom" || pageState === 'playBots', onClick: () => { } }
     ]
 
     return (
@@ -121,12 +127,14 @@ export default function Menu() {
 
                 {pageState === 'loading' && tab === 'analyze' ? <Loading format={format} analyzeController={analyzeController} /> : ''}
 
-                {pageState === 'analyze' && tab === 'summary' ? <Summary setAnimation={setAnimation} setForward={setForward} setMoveNumber={setMoveNumber} moveNumber={moveNumber} players={players} moves={game} container={menuRef.current as HTMLElement} /> : ''}
-                {pageState === 'analyze' && tab === 'moves' ? <Moves container={menuRef.current as HTMLElement} moves={game} overallGameComment={overallGameComment} moveNumber={moveNumber} setMoveNumber={setMoveNumber} analyzingMove={analyzingMove} setAnimation={setAnimation} setForward={setForward} customLine={customLine} returnedToNormalGame={returnedToNormalGame} /> : ''}
+                {(pageState === 'analyze' || pageState === 'playBots') && tab === 'summary' ? <Summary setAnimation={setAnimation} setForward={setForward} setMoveNumber={setMoveNumber} moveNumber={moveNumber} players={players} moves={game} container={menuRef.current as HTMLElement} /> : ''}
+                {(pageState === 'analyze' || pageState === 'playBots') && tab === 'moves' ? <Moves container={menuRef.current as HTMLElement} moves={game} overallGameComment={overallGameComment} moveNumber={moveNumber} setMoveNumber={setMoveNumber} analyzingMove={analyzingMove} setAnimation={setAnimation} setForward={setForward} customLine={customLine} returnedToNormalGame={returnedToNormalGame} /> : ''}
+
+                {tab === 'playBots' ? <PlayBots /> : ''}
 
                 {pageState === 'analyzeCustom' && tab === 'moves' ? <Moves container={menuRef.current as HTMLElement} moves={[game[0], ...customLine.moves]} overallGameComment={overallGameComment} moveNumber={customLine.moveNumber + 1} setMoveNumber={moveNumber => setCustomLine(prev => ({ ...prev, moveNumber: moveNumber - 1 }))} analyzingMove={analyzingMove} setAnimation={setAnimation} setForward={setForward} customLine={customLine} returnedToNormalGame={returnedToNormalGame} /> : ''}
             </div>
-            {pageState === 'analyze' || pageState === 'analyzeCustom' ? (
+            {pageState === 'analyze' || pageState === 'analyzeCustom' || pageState === 'playBots' ? (
                 <div className="flex-col gap-1 pb-1 items-center hidden vertical:flex">
                     <hr className="border-neutral-600 w-[85%]" />
                     <GameButtons />

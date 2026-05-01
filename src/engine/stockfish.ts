@@ -24,12 +24,14 @@ export interface move {
     bestMoveSan?: string,
     moveRating?: moveRating,
     comment?: string,
+    aiComment?: string,
     color: Color,
     capture?: PieceSymbol,
     castle?: 'k' | 'q',
     san?: string,
     sacrifice?: boolean,
     previousStaticEvals?: string[][],
+    clockTime?: number,
 }
 
 export interface openings {
@@ -178,8 +180,10 @@ function getPlayers(headers: Record<string, string>) {
 }
 
 function getTime(headers: Record<string, string>) {
-    const seconds = headers.TimeControl ?? "0"
-    return Number(seconds)
+    const raw = headers.TimeControl ?? "0"
+    // Handle increment format like "600+5" — we only want the base seconds
+    const base = raw.split('+')[0]
+    return Number(base) || 0
 }
 
 function getResult(headers: Record<string, string>, pgn: string): result {
@@ -219,12 +223,13 @@ function formatMove(evaluation: string) {
 }
 
 function formatStaticEval(evaluation: string) {
-    const line = evaluation.split('\n').filter(line => line.startsWith('info')).pop()
-    const fields = line?.split(/\s+/)
-
-    const staticEval = fields?.slice(fields?.indexOf('score') + 1, fields.indexOf('nodes'))
-
-    return staticEval
+    const cpMatch = evaluation.match(/score cp (-?\d+)/);
+    const mateMatch = evaluation.match(/score mate (-?\d+)/);
+    
+    if (mateMatch) return ['mate', mateMatch[1]];
+    if (cpMatch) return ['cp', cpMatch[1]];
+    
+    return undefined;
 }
 
 async function getBestMove(program: Worker, depth: number, signal: AbortSignal): Promise<{ bestMove: square[], coronation?: PieceSymbol, staticEval: string[] }> {
@@ -243,9 +248,9 @@ async function getBestMove(program: Worker, depth: number, signal: AbortSignal):
             const { movement: bestMove, coronation } = formatMove(line)
             staticEval = formatStaticEval(line) ?? staticEval
 
-            if (bestMove) {
+            if (line.startsWith('bestmove')) {
                 cleanUp()
-                resolve({ bestMove, coronation, staticEval })
+                resolve({ bestMove: bestMove ?? [], coronation, staticEval })
             }
         }
 
@@ -463,7 +468,7 @@ function getMoveRating(staticEval: string[], previousStaticEvals: string[][], be
     return { moveRating: standardRating, comment: COMMENTS[standardRating][commentNumber] }
 }
 
-async function analyze(program: Worker, fen: string, depth: number, signal: AbortSignal) {
+export async function analyze(program: Worker, fen: string, depth: number, signal: AbortSignal) {
     program.postMessage(`position fen ${fen}`)
 
     try {
@@ -614,8 +619,29 @@ async function waitTillReady(engine: Worker, signal?: AbortSignal) {
 }
 
 function clearPgn(pgn: string) {
-    // remove comments
+    // remove PGN escape lines (lines starting with % at the beginning of a line)
     return pgn.replace(/^%.*/gm, '')
+}
+
+/**
+ * Extracts per-move remaining clock times from %clk annotations in raw PGN.
+ * Chess.com embeds times as: 1. e4 {[%clk 0:09:58]} e5 {[%clk 0:09:55]}
+ * Returns an array of seconds remaining (indexed by half-move, starting at index 0
+ * for White's first move, 1 for Black's first move, etc.).
+ * Returns an empty array if no %clk data is found.
+ */
+function parseClockTimes(rawPgn: string): number[] {
+    const times: number[] = []
+    // Match {[%clk H:MM:SS]} or {[%clk H:MM:SS.d]}
+    const CLK_REGEX = /\{\[%clk\s+(\d+):(\d{2}):(\d{2})(?:\.\d+)?\]\}/g
+    let match: RegExpExecArray | null
+    while ((match = CLK_REGEX.exec(rawPgn)) !== null) {
+        const hours = parseInt(match[1], 10)
+        const minutes = parseInt(match[2], 10)
+        const seconds = parseInt(match[3], 10)
+        times.push(hours * 3600 + minutes * 60 + seconds)
+    }
+    return times
 }
 
 export function moveToSan(move: square[], coronation: PieceSymbol | undefined, fen: string) {
@@ -739,6 +765,9 @@ export function parsePGN(stockfish: Worker, rawPgn: string, depth: number, openi
 
         const chess = new Chess()
 
+        // Extract %clk annotations BEFORE chess.js strips comments
+        const clockTimes = parseClockTimes(rawPgn)
+
         const pgn = clearPgn(rawPgn)
 
         try {
@@ -815,6 +844,10 @@ export function parsePGN(stockfish: Worker, rawPgn: string, depth: number, openi
                 previousStaticEvals: newPreviousStaticEvals,
             } = await parseMove(stockfish, depth, move, chess, previousStaticEvals, previousBestMoveSan, previousSacrifice, openings, handleAbort, signal)
 
+            // clockTimes is indexed by half-move (0 = White move 1, 1 = Black move 1, ...)
+            // moveNumber at this point equals the half-move index for this move
+            const clockTime = clockTimes.length > moveNumber ? clockTimes[moveNumber] : undefined
+
             moves.push({
                 fen,
                 movement,
@@ -828,6 +861,7 @@ export function parsePGN(stockfish: Worker, rawPgn: string, depth: number, openi
                 bestMoveSan,
                 sacrifice,
                 previousStaticEvals: newPreviousStaticEvals,
+                clockTime,
             })
 
             if (!newPreviousStaticEvals || sacrifice === undefined) continue

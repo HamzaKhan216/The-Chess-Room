@@ -110,7 +110,7 @@ export default function GameChart(props: { moves: move[], container: HTMLElement
     const upperFirstLetter = (str: string) => str[0]?.toUpperCase() + str.substring(1)
     
     const lastBookMove = getLastBookMove(moves)
-    const strokeColor = moves[moveNumber].moveRating !== 'forced' ? `highlight${upperFirstLetter(moves[moveNumber].moveRating ?? '')}` : 'foregroundGrey'
+    const strokeColor = moves[moveNumber]?.moveRating !== 'forced' ? `highlight${upperFirstLetter(moves[moveNumber]?.moveRating ?? '')}` : 'foregroundGrey'
 
     return (
         <svg onClick={changeMoveNumber} onMouseMove={hoverMove} onMouseLeave={() => setHoveredMove(NaN)} width={size.width} height={size.height} className="bg-evaluationBarBlack rounded-borderRoundness">

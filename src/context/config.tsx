@@ -42,6 +42,13 @@ export const ConfigContext = createContext<{
     showLegalMoves: [boolean, Dispatch<SetStateAction<boolean>>],
     animateMoves: [boolean, Dispatch<SetStateAction<boolean>>],
     boardSounds: [boolean, Dispatch<SetStateAction<boolean>>],
+    groqApiKey: [string, Dispatch<SetStateAction<string>>],
+    geminiApiKey: [string, Dispatch<SetStateAction<string>>],
+    aiProvider: ["groq" | "gemini", Dispatch<SetStateAction<"groq" | "gemini">>],
+    autoAiReview: [boolean, Dispatch<SetStateAction<boolean>>],
+    ttsEnabled: [boolean, Dispatch<SetStateAction<boolean>>],
+    ttsSpeaking: [boolean, Dispatch<SetStateAction<boolean>>],
+    aiMode: ["beginner" | "advanced", Dispatch<SetStateAction<"beginner" | "advanced">>],
 
     boardMenuSettingsRef: React.MutableRefObject<HTMLButtonElement | null>,
 }>({
@@ -54,6 +61,13 @@ export const ConfigContext = createContext<{
     showLegalMoves: [true, () => { }],
     animateMoves: [true, () => { }],
     boardSounds: [true, () => { }],
+    groqApiKey: ["", () => { }],
+    geminiApiKey: ["", () => { }],
+    aiProvider: ["groq", () => { }],
+    autoAiReview: [false, () => { }],
+    ttsEnabled: [true, () => { }],
+    ttsSpeaking: [false, () => { }],
+    aiMode: ["advanced", () => { }],
 
     boardMenuSettingsRef: { current: null },
 })
@@ -68,12 +82,19 @@ export default function ConfigContextProvider(props: { children: React.ReactNode
     const [showLegalMoves, setShowLegalMoves] = useState<boolean>(true)
     const [animateMoves, setAnimateMoves] = useState<boolean>(true)
     const [boardSounds, setBoardSounds] = useState<boolean>(true)
+    const [groqApiKey, setGroqApiKey] = useState<string>("")
+    const [geminiApiKey, setGeminiApiKey] = useState<string>("")
+    const [aiProvider, setAiProvider] = useState<"groq" | "gemini">("groq")
+    const [autoAiReview, setAutoAiReview] = useState<boolean>(false)
+    const [ttsEnabled, setTtsEnabled] = useState<boolean>(true)
+    const [ttsSpeaking, setTtsSpeaking] = useState<boolean>(false)
+    const [aiMode, setAiMode] = useState<"beginner" | "advanced">("advanced")
 
     const boardMenuSettingsRef = useRef<HTMLButtonElement>(null)
 
     return (
-        <ConfigContext.Provider value={{ boardTheme: [boardTheme, setBoardTheme], openedMenu: [openedMenu, setOpenedMenu], usedRatings: [usedRatings, setUsedRatings], highlightByRating: [highlightByRating, setHighlightByRating], showArrows: [showArrows, setShowArrows], arrowAfterMove: [arrowAfterMove, setArrowAfterMove], showLegalMoves: [showLegalMoves, setShowLegalMoves], animateMoves: [animateMoves, setAnimateMoves], boardSounds: [boardSounds, setBoardSounds], boardMenuSettingsRef: boardMenuSettingsRef }}>
+        <ConfigContext.Provider value={{ boardTheme: [boardTheme, setBoardTheme], openedMenu: [openedMenu, setOpenedMenu], usedRatings: [usedRatings, setUsedRatings], highlightByRating: [highlightByRating, setHighlightByRating], showArrows: [showArrows, setShowArrows], arrowAfterMove: [arrowAfterMove, setArrowAfterMove], showLegalMoves: [showLegalMoves, setShowLegalMoves], animateMoves: [animateMoves, setAnimateMoves], boardSounds: [boardSounds, setBoardSounds], groqApiKey: [groqApiKey, setGroqApiKey], geminiApiKey: [geminiApiKey, setGeminiApiKey], aiProvider: [aiProvider, setAiProvider], autoAiReview: [autoAiReview, setAutoAiReview], ttsEnabled: [ttsEnabled, setTtsEnabled], ttsSpeaking: [ttsSpeaking, setTtsSpeaking], aiMode: [aiMode, setAiMode], boardMenuSettingsRef: boardMenuSettingsRef }}>
             {props.children}
         </ConfigContext.Provider>
     )
-}
+}

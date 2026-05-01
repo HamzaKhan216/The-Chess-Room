@@ -30,9 +30,9 @@ export interface CustomLine {
     arrows: AllGameArrows
 }
 
-type pageState = 'default' | 'loading' | 'analyze' | 'analyzeCustom'
+type pageState = 'default' | 'loading' | 'analyze' | 'analyzeCustom' | 'playBots'
 
-type tabs = 'analyze' | 'selectGame' | 'summary' | 'moves'
+type tabs = 'analyze' | 'selectGame' | 'summary' | 'moves' | 'playBots'
 
 const abortControllerInstance = new AbortController()
 
@@ -55,7 +55,8 @@ export const AnalyzeContext = createContext<{
     customLine: [CustomLine, Dispatch<SetStateAction<CustomLine>>],
     returnedToNormalGame: [square[]|null, Dispatch<SetStateAction<square[]|null>>]
     analyzingMove: [boolean, Dispatch<SetStateAction<boolean>>],
-    depth: [number, Dispatch<SetStateAction<number>>]
+    depth: [number, Dispatch<SetStateAction<number>>],
+    botDifficulty: [number, Dispatch<SetStateAction<number>>],
     gameController: Controller,
 }>({
     data: [{format: "fen", string: ""}, () => { }],
@@ -77,6 +78,7 @@ export const AnalyzeContext = createContext<{
     returnedToNormalGame: [null, () => { }],
     analyzingMove: [false, () => { }],
     depth: [18, () => { }],
+    botDifficulty: [5, () => { }],
     gameController: { back: () => { }, forward: () => { }, last: () => { }, first: () => { }, play: () => { }, pause: () => { }, togglePlay: () => { } },
 })
 
@@ -100,6 +102,7 @@ export default function AnalyzeContextProvider(props: { children: React.ReactNod
     const [returnedToNormalGame, setReturnedToNormalGame] = useState<square[]|null>(null)
     const [analyzingMove, setAnalyzingMove] = useState(false)
     const [depth, setDepth] = useState(18)
+    const [botDifficulty, setBotDifficulty] = useState(5)
 
     const moveNumberRef = useRef(moveNumber)
     const customLineRef = useRef(customLine)
@@ -184,7 +187,7 @@ export default function AnalyzeContextProvider(props: { children: React.ReactNod
     }
 
     return (
-        <AnalyzeContext.Provider value={{ data: [data, setData], pageState: [pageState, setPageState], game: [game, setGame], players: [players, setPlayers], moveNumber: [moveNumber, setMoveNumber], forward: [forward, setForward], white: [white, setWhite], animation: [animation, setAnimation], playing: [playing, setPlaying], time: [time, setTime], materialAdvantage: [materialAdvantage, setMaterialAdvantage], result: [result, setResult], progress: [progress, setProgress], tab: [tab, setTab], analyzeController: [analyzeController, setAnalyzeController], customLine: [customLine, setCustomLine], returnedToNormalGame: [returnedToNormalGame, setReturnedToNormalGame], analyzingMove: [analyzingMove, setAnalyzingMove], depth: [depth, setDepth], gameController }}>
+        <AnalyzeContext.Provider value={{ data: [data, setData], pageState: [pageState, setPageState], game: [game, setGame], players: [players, setPlayers], moveNumber: [moveNumber, setMoveNumber], forward: [forward, setForward], white: [white, setWhite], animation: [animation, setAnimation], playing: [playing, setPlaying], time: [time, setTime], materialAdvantage: [materialAdvantage, setMaterialAdvantage], result: [result, setResult], progress: [progress, setProgress], tab: [tab, setTab], analyzeController: [analyzeController, setAnalyzeController], customLine: [customLine, setCustomLine], returnedToNormalGame: [returnedToNormalGame, setReturnedToNormalGame], analyzingMove: [analyzingMove, setAnalyzingMove], depth: [depth, setDepth], botDifficulty: [botDifficulty, setBotDifficulty], gameController }}>
             {props.children}
         </AnalyzeContext.Provider>
     )

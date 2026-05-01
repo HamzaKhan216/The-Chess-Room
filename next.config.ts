@@ -1,11 +1,13 @@
 import type { NextConfig } from "next"
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
+
 const nextConfig: NextConfig = {
   /* config options here */
   // reactStrictMode: false,
-  output: "export",
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH,
-  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH + "/",
+  // output: "export",
+  basePath: basePath,
+  assetPrefix: basePath ? basePath + "/" : undefined,
   distDir: "dist",
   images: {
     unoptimized: true,
@@ -13,14 +15,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: `${process.env.NEXT_PUBLIC_BASE_PATH}/(.*)`,
+        source: `${basePath}/(.*)`,
         headers: [
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
         ],
       },
       {
-        source: `${process.env.NEXT_PUBLIC_BASE_PATH}/engine/(.*)`,
+        source: `${basePath}/engine/(.*)`,
         headers: [
           { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
         ],
