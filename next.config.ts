@@ -8,23 +8,17 @@ const nextConfig: NextConfig = {
   // output: "export",
   basePath: basePath,
   assetPrefix: basePath ? basePath + "/" : undefined,
-  distDir: "dist",
+  // distDir: "dist",
   images: {
     unoptimized: true,
   },
   async headers() {
     return [
       {
-        source: `${basePath}/(.*)`,
+        source: "/:path*",
         headers: [
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
-        ],
-      },
-      {
-        source: `${basePath}/engine/(.*)`,
-        headers: [
-          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
         ],
       },
     ]
