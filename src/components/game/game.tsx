@@ -7,7 +7,6 @@ import Clock from "./clock"
 import Name from "./name"
 import Evaluation from "./evaluation"
 import { AnalyzeContext, CustomLine } from "@/context/analyze"
-import { AIExplanationRequest, getAIExplanations } from "@/engine/aiCoach"
 import { analyze, deformatSquare, formatSquare, getCastle, invertColor, move, openings, parseMove, parsePGN, parsePosition, prepareStockfish, result, square } from "@/engine/stockfish"
 import { Chess, PieceSymbol, WHITE } from "chess.js"
 import { getAproxMemory, wasmSupported, wasmThreadsSupported } from "@/engine/wasmChecks"
@@ -190,11 +189,6 @@ export default function Game() {
     }, [moveNumber, customLine.moveNumber])
 
     const [botDifficulty] = analyzeContext.botDifficulty
-    const [groqKey] = configContext.groqApiKey
-    const [geminiKey] = configContext.geminiApiKey
-    const [aiProvider] = configContext.aiProvider
-    const [aiMode] = configContext.aiMode
-    const [autoAiReview] = configContext.autoAiReview
 
     useEffect(() => {
         if (pageState !== 'playBots') return

@@ -42,7 +42,6 @@ export default function Menu() {
     const [customLine, setCustomLine] = analyzeContext.customLine
     const [returnedToNormalGame] = analyzeContext.returnedToNormalGame
     const [depth, setDepth] = analyzeContext.depth
-    const [botDifficulty, setBotDifficulty] = analyzeContext.botDifficulty
 
     const menuRef = useRef<HTMLDivElement>(null)
 

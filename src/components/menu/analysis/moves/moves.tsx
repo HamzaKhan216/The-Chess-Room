@@ -1,6 +1,6 @@
 import { CustomLine } from "@/context/analyze"
 import { move, moveRating, square } from "@/engine/stockfish"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import Comments, { FormatEval } from "./comments"
 import { WHITE } from "chess.js"
 import GameChart from "../gameChart"
@@ -43,8 +43,6 @@ export function getLastBookMove(moves: move[]) {
 
 export default function Moves(props: { moves: move[], overallGameComment: string, container: HTMLElement, moveNumber: number, setMoveNumber: (moveNumber: number) => void, setAnimation: (animation: boolean) => void, setForward: (forward: boolean) => void, customLine: CustomLine, returnedToNormalGame: square[] | null, analyzingMove: boolean }) {
     const { moves, overallGameComment, container, moveNumber, setMoveNumber, setAnimation, setForward, customLine, returnedToNormalGame, analyzingMove } = props
-
-    const [movesHeight, setMovesHeight] = useState(0)
 
     const componentRef = useRef<HTMLDivElement>(null)
     const commentsRef = useRef<HTMLDivElement>(null)
