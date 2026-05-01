@@ -7,18 +7,18 @@ import { platform } from "../menu"
 type format = [string, string, string]
 
 export const FORMATS: format[] = [
-    ["Chess.com", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/chesscom.svg`, "platform"],
-    ["Lichess.org", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/lichess.svg`, "platform"],
-    ["PGN", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/pgn.svg`, "format"],
-    ["FEN", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/json.svg`, "format"],
+    ["Chess.com", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/chesscom.svg`, "platform"],
+    ["Lichess.org", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/lichess.svg`, "platform"],
+    ["PGN", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/pgn.svg`, "format"],
+    ["FEN", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/json.svg`, "format"],
 ]
 
 type type = [string, string, number]
 
 export const TYPES: type[] = [
-    ["Quick", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/quick.svg`, 15],
-    ["Basic", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/standard.svg`, 18],
-    ["Deep", `${process.env.NEXT_PUBLIC_BASE_PATH}/images/deep.svg`, 21],
+    ["Quick", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/quick.svg`, 15],
+    ["Basic", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/standard.svg`, 18],
+    ["Deep", `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/deep.svg`, 21],
 ]
 
 export default function Form(props: { setData: (data: Data) => void, selectGame: (username: string, platform: platform ) => void, depth: [number, (depth: number) => void], selected: [number, (selected: number) => void] }) {
@@ -157,7 +157,7 @@ export default function Form(props: { setData: (data: Data) => void, selectGame:
                     <div className={`absolute h-full right-6 top-0 flex flex-row items-center ${isSelecting ? "" : "rotate-180"}`}><Arrow class="fill-foregroundGrey" /></div>
                 </button>
                 <div className="flex flex-col gap-2" style={{ display: isSelecting ? "" : "none" }}>
-                    <h6 className="mt-2 font-bold flex flex-row gap-1"><Image alt="depth" src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/formats.svg`} width={18} height={18} />Game Formats</h6>
+                    <h6 className="mt-2 font-bold flex flex-row gap-1"><Image alt="depth" src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/formats.svg`} width={18} height={18} />Game Formats</h6>
                     <ul className="grid grid-cols-2 gap-3">
                         {FORMATS.map((format, i) => {
                             return (
@@ -170,7 +170,7 @@ export default function Form(props: { setData: (data: Data) => void, selectGame:
                             )
                         })}
                     </ul>
-                    <h6 className="mt-2 font-bold flex flex-row gap-2"><Image priority alt="depth" src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/type.svg`} width={20} height={0} />Analysis Type</h6>
+                    <h6 className="mt-2 font-bold flex flex-row gap-2"><Image priority alt="depth" src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/type.svg`} width={20} height={0} />Analysis Type</h6>
                     <ul className="grid grid-cols-3 gap-3">
                         {TYPES.map((type, i) => {
                             return (

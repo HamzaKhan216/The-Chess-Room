@@ -138,7 +138,7 @@ export default function Game() {
 
     useEffect(() => {
         (async () => {
-            const openingsRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH}/openings/openings.json`)
+            const openingsRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/openings/openings.json`)
             const openings = await openingsRes.json()
             setOpenings(openings as openings)
         })()
@@ -149,15 +149,15 @@ export default function Game() {
             if (!wasmSupported()) {
                 // Web Assembly not Supported
                 pushPageWarning(setErrors, NOT_SUPPORTED_WASM_WARNING[0], NOT_SUPPORTED_WASM_WARNING[1])
-                engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH}/engine/stockfish-asm.js`)
+                engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/engine/stockfish-asm.js`)
             } else {
                 // Web Assembly Threads not Supported
                 // pushPageWarning(setErrors, NOT_SUPPORTED_WASM_THREADS_WARNING[0], NOT_SUPPORTED_WASM_THREADS_WARNING[1])
-                engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH}/engine/stockfish-single.js`)
+                engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/engine/stockfish-single.js`)
             }
         } else {
             // Supported
-            engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH}/engine/stockfish.js`)
+            engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/engine/stockfish.js`)
         }
 
         const stockfish = engineWorkerRef.current
