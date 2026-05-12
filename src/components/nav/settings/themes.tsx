@@ -1,7 +1,7 @@
 import { ConfigContext } from "@/context/config"
 import { useContext, useEffect } from "react"
 
-type boardThemeLabel = "Green" | "Brown" | "Blue" | "Gray" | "Red" | "Purple" | "Orange"
+type boardThemeLabel = "Knight's Court" | "Green" | "Brown" | "Blue" | "Gray" | "Red" | "Purple" | "Orange"
 
 interface boardTheme {
     label: boardThemeLabel,

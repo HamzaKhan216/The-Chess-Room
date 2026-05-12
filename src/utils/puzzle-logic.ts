@@ -1,4 +1,4 @@
-import { Chess, Square } from 'chess.js';
+import { Square } from 'chess.js';
 
 export interface PuzzleData {
   id: string;
@@ -40,7 +40,7 @@ export function getStats(): PuzzleStats {
         }
       }
       return stats;
-    } catch (e) {
+    } catch {
       return defaultStats();
     }
   }

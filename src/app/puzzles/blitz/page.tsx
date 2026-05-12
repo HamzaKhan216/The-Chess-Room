@@ -29,7 +29,7 @@ export default function BlitzPuzzlesPage() {
   const [chess, setChess] = useState(new Chess());
   const [flash, setFlash] = useState<'green' | 'red' | null>(null);
   const [move, setMove] = useState<square[]>([]);
-  const [forward, setForward] = useState(true);
+  const [forward] = useState(true);
   const [animation, setAnimation] = useState(true);
   const [drag, setDrag] = useState<drag>({ is: false, id: '' });
   const [difficulty, setDifficulty] = useState<Difficulty>('intermediate');
@@ -265,7 +265,7 @@ export default function BlitzPuzzlesPage() {
           )}
           
           <div className="flex flex-col items-center gap-2">
-            <h2 className="text-foregroundGrey font-bold uppercase tracking-[0.2em]">Time's Up!</h2>
+            <h2 className="text-foregroundGrey font-bold uppercase tracking-[0.2em]">Time&apos;s Up!</h2>
             <div className="flex flex-col items-center">
               <span className="text-8xl font-black text-white">{score}</span>
               <span className="text-foregroundGrey font-bold">Puzzles Solved</span>

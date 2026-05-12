@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { prepareStockfish, getAproxMemory, wasmSupported, wasmThreadsSupported } from '@/engine/wasmChecks'; // Need to check where these are
+
 // Wait, I should import from where they are actually defined.
 // prepareStockfish is in stockfish.ts
 // getAproxMemory etc are in wasmChecks.ts

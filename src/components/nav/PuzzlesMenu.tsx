@@ -7,7 +7,7 @@ import { ConfigContext } from "@/context/config"
 
 export default function PuzzlesMenu({ hidden }: { hidden: boolean }) {
     const configContext = useContext(ConfigContext)
-    const [openedMenu, setOpenedMenu] = configContext.openedMenu
+    const [, setOpenedMenu] = configContext.openedMenu
 
     if (hidden) return null
 

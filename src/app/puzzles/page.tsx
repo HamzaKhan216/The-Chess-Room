@@ -2,16 +2,13 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Board, { drag } from '@/components/game/board';
-import Nav from '@/components/nav/nav';
+
 import PuzzleFilters from '@/components/puzzle/PuzzleFilters';
 import PuzzleStatsView from '@/components/puzzle/PuzzleStats';
 import { BoardContainer } from '@/components/game/BoardContainer';
-import { PuzzleData, PuzzleStats, getStats, saveStats, fromUCI, toUCI, isCorrectMove } from '@/utils/puzzle-logic';
+import { PuzzleData, PuzzleStats, getStats, saveStats, fromUCI, isCorrectMove } from '@/utils/puzzle-logic';
 import { Chess, Square } from 'chess.js';
-import { formatSquare, square, moveRating } from '@/engine/stockfish';
-import ConfigContextProvider from '@/context/config';
-import ErrorsContextProvider from '@/context/errors';
-import PageErrors from '@/components/errors/pageErrors';
+import { formatSquare, square } from '@/engine/stockfish';
 import { PieceSymbol } from 'chess.js';
 
 const navTop = 516; // From tailwind.config.ts
@@ -30,13 +27,13 @@ export default function PuzzlesPage() {
   const [flash, setFlash] = useState<'green' | 'red' | null>(null);
   const [drag, setDrag] = useState<drag>({ is: false, id: '' });
   const [animation, setAnimation] = useState(true);
-  const [boardSize, setBoardSize] = useState(600);
+
   const [hintSquare, setHintSquare] = useState<Square | null>(null);
 
   const [move, setMove] = useState<square[]>([]);
   const [forward, setForward] = useState(true);
 
-  const boardRef = useRef<HTMLDivElement>(null);
+
   const fetchingRef = useRef(false);
   const initialFetchRef = useRef(false);
 
@@ -221,7 +218,7 @@ export default function PuzzlesPage() {
     setStatus('failed');
     setStats({ ...stats, streak: 0 });
 
-    let tempChess = new Chess(chess.fen());
+    const tempChess = new Chess(chess.fen());
     for (let i = currentMoveIndex; i < puzzle.solution.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 800));
       const { from, to, promotion } = fromUCI(puzzle.solution[i]);

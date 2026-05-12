@@ -413,7 +413,6 @@ export default function Board(props: { cleanArrows: () => void, sacrifice?: bool
 
     const [boardTheme] = configContext.boardTheme
     const [usedRatings] = configContext.usedRatings
-    const [highlightByRating] = configContext.highlightByRating
     const [showArrows] = configContext.showArrows
     const [arrowAfterMove] = configContext.arrowAfterMove
     const [showLegalMoves] = configContext.showLegalMoves
@@ -451,7 +450,6 @@ export default function Board(props: { cleanArrows: () => void, sacrifice?: bool
 
     const filteredHighlightStyle = filterHighlightStyle(HIGHLIGHT_COLORS)
 
-    const highlightColor = highlightByRating ? filteredHighlightStyle[moveRating as keyof typeof filteredHighlightStyle]?.color || boardThemes[boardTheme].highlight : boardThemes[boardTheme].highlight
     const highlightRating = filteredHighlightStyle[moveRating as keyof typeof filteredHighlightStyle]?.rating
 
     const soundChessInstance = forward ? chess : new Chess(nextFen)

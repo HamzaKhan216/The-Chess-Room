@@ -7,9 +7,9 @@ import Clock from "./clock"
 import Name from "./name"
 import Evaluation from "./evaluation"
 import { AnalyzeContext, CustomLine } from "@/context/analyze"
-import { analyze, deformatSquare, formatSquare, getCastle, invertColor, move, openings, parseMove, parsePGN, parsePosition, prepareStockfish, result, square } from "@/engine/stockfish"
+import { analyze, deformatSquare, formatSquare, getCastle, invertColor, move, openings, parseMove, parsePGN, parsePosition, result, square } from "@/engine/stockfish"
 import { Chess, PieceSymbol, WHITE } from "chess.js"
-import { getAproxMemory, wasmSupported, wasmThreadsSupported } from "@/engine/wasmChecks"
+import { wasmSupported, wasmThreadsSupported } from "@/engine/wasmChecks"
 import { pushPageWarning, pushPageError } from "@/components/errors/pageErrors"
 import { ErrorsContext } from "@/context/errors"
 import { maxVertical, navTop } from "../../../tailwind.config"
@@ -119,10 +119,10 @@ export default function Game() {
     const componentRef = useRef<HTMLDivElement>(null)
     const gameRef = useRef<HTMLDivElement>(null)
 
-    const intervalRef = useRef<NodeJS.Timeout>()
+
     const tabRef = useRef(tab)
 
-    const lastSpokenMoveRef = useRef<number>(-1)
+
     const dragRef = useRef(drag)
 
 

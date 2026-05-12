@@ -16,12 +16,12 @@ import Moves from "./analysis/moves/moves"
 import getOverallGameComment from "./analysis/moves/overallGameComment"
 import SelectLichessOrgGame from "./analyze/selectLichessOrg"
 import PlayBots from "./play/playBots"
-import { useRouter } from "next/navigation"
+
 
 export type platform = "chessCom" | "lichessOrg"
 
 export default function Menu() {
-    const router = useRouter()
+
     const [username, setUsername] = useState<{platform: platform, username: string}>({platform: "chessCom", username: ""})
 
     const [selected, select] = useState(0)
