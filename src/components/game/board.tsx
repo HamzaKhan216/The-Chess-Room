@@ -357,14 +357,15 @@ function Piece(props: { squareSize: number, pieceRef: RefObject<HTMLDivElement>,
 
         if (!board) return
 
+        const boardRect = board.getBoundingClientRect()
         const limits = {
             min: {
-                x: board.offsetLeft,
-                y: board.offsetTop,
+                x: boardRect.left,
+                y: boardRect.top,
             },
             max: {
-                x: board.offsetLeft + board.offsetWidth,
-                y: board.offsetTop + board.offsetHeight,
+                x: boardRect.left + boardRect.width,
+                y: boardRect.top + boardRect.height,
             },
         }
 
@@ -683,10 +684,10 @@ export default function Board(props: { cleanArrows: () => void, sacrifice?: bool
 
                             let squareNumGuide, squareLetterGuide
                             if (rowNumber === (white ? 7 : 0)) {
-                                squareLetterGuide = <span style={{ right: rightSize, color: guideColor }} className={`absolute bottom-0`}>{squareId[0]}</span>
+                                squareLetterGuide = <span style={{ right: rightSize, color: guideColor }} className={`absolute bottom-0 font-mono`}>{squareId[0]}</span>
                             }
                             if (columnNumber === (white ? 0 : 7)) {
-                                squareNumGuide = <span style={{ left: leftSize, color: guideColor }} className={`absolute top-0`}>{squareId[1]}</span>
+                                squareNumGuide = <span style={{ left: leftSize, color: guideColor }} className={`absolute top-0 font-mono`}>{squareId[1]}</span>
                             }
 
                             let rounded: string = ''
@@ -704,13 +705,14 @@ export default function Board(props: { cleanArrows: () => void, sacrifice?: bool
                             move.forEach((square, i) => {
                                 const highlightedSquare = adaptSquare(square)
                                 if (highlightedSquare.col === columnNumber && highlightedSquare.row === rowNumber) {
-                                    highlighted = <div style={{ backgroundColor: highlightColor }} className={`absolute z-[10] top-0 left-0 w-full h-full opacity-50 ${rounded}`} />
+                                    const squareHighlightColor = i === 0 ? 'var(--sq-highlight-from)' : 'var(--sq-highlight-to)'
+                                    highlighted = <div style={{ backgroundColor: squareHighlightColor }} className={`absolute z-[10] top-0 left-0 w-full h-full ${rounded}`} />
                                     if (i === 1) highlightedIcon = highlightRating && i === 1 ? <RatingSVG className="absolute top-0 right-0 z-[80] pointer-events-none" style={{ transform: `translateX(${iconTranslateX}%) translateY(${iconTranslateY}%)` }} size={iconSize} rating={highlightRating} /> : ''
                                 }
                             })
 
                             if ((squareId === drag.id && !highlighted) || (coronation.choosing && adaptedCoronationSquare?.col === columnNumber && adaptedCoronationSquare?.row === rowNumber)) {
-                                highlighted = <div style={{ backgroundColor: boardThemes[boardTheme].highlight }} className={`absolute top-0 left-0 w-full h-full opacity-50 ${rounded}`} />
+                                highlighted = <div style={{ backgroundColor: 'var(--sq-selected)' }} className={`absolute top-0 left-0 w-full h-full ${rounded}`} />
                             }
 
                             let resultIcon

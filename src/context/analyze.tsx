@@ -82,9 +82,9 @@ export const AnalyzeContext = createContext<{
     gameController: { back: () => { }, forward: () => { }, last: () => { }, first: () => { }, play: () => { }, pause: () => { }, togglePlay: () => { } },
 })
 
-export default function AnalyzeContextProvider(props: { children: React.ReactNode }) {
+export default function AnalyzeContextProvider(props: { children: React.ReactNode, initialPageState?: pageState, initialTab?: tabs }) {
     const [data, setData] = useState<Data>({format: "fen", string: ""})
-    const [pageState, setPageState] = useState<pageState>('default')
+    const [pageState, setPageState] = useState<pageState>(props.initialPageState || 'default')
     const [game, setGame] = useState<move[]>([])
     const [players, setPlayers] = useState<players>([{ name: 'White', elo: '?' }, { name: 'Black', elo: '?' }])
     const [moveNumber, setMoveNumber] = useState(0)
@@ -96,7 +96,7 @@ export default function AnalyzeContextProvider(props: { children: React.ReactNod
     const [materialAdvantage, setMaterialAdvantage] = useState(0)
     const [result, setResult] = useState<result>('')
     const [progress, setProgress] = useState(0)
-    const [tab, setTab] = useState<tabs>('analyze')
+    const [tab, setTab] = useState<tabs>(props.initialTab || 'analyze')
     const [analyzeController, setAnalyzeController] = useState<AbortController>(abortControllerInstance)
     const [customLine, setCustomLine] = useState<CustomLine>({ moveNumber: -1, moves: [], arrows: {} })
     const [returnedToNormalGame, setReturnedToNormalGame] = useState<square[]|null>(null)

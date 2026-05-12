@@ -7,6 +7,7 @@ import Licenses from "../svg/license"
 import Settings from "./settings/settings"
 import { ConfigContext } from "@/context/config"
 import Link from "next/link"
+import PuzzlesMenu from "./PuzzlesMenu"
 
 export const DONATE_URL = "https://www.paypal.com/donate/?hosted_button_id=S8SWJBNYZ2WFW"
 
@@ -73,10 +74,22 @@ export default function Nav() {
         <nav className="flex flex-col navTop:h-screen navTop:w-max w-screen relative">
             <div className="navTop:pt-1 navTop:pb-6 navTop:h-full w-full overflow-y-auto bg-backgroundBox flex navTop:flex-col flex-row justify-between select-none navTop:items-start items-stretch">
                 <div ref={topLinksRef} className="flex navTop:flex-col flex-row">
-                    <Link draggable={false} onMouseEnter={() => setOpenedMenu(null)} href="/" className="flex flex-row gap-1 font-extrabold text-xl navTop:p-3 p-1.5 transition-colors hover:bg-backgroundBoxHover hover:text-foregroundHighlighted">
+                    <Link draggable={false} onMouseEnter={() => setOpenedMenu(null)} href="/analyze" className="flex flex-row gap-1 font-extrabold text-xl navTop:p-3 p-1.5 transition-colors hover:bg-backgroundBoxHover hover:text-foregroundHighlighted">
                         <Image draggable={false} height={30} width={30} alt="logo" src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/logo.svg`} className="navTop:mt-[-2px]" />
-                        <div className="h-fit w-fit reduceNav:block hidden">Brilliant<span className="text-sm font-light">Chess</span></div>
+                        <div className="h-fit w-fit reduceNav:block hidden font-display">Brilliant<span className="text-sm font-light">Chess</span></div>
                     </Link>
+                    <Link draggable={false} href="/analyze" className="text-lg outline-none font-bold navTop:px-3 navTop:py-2 p-1.5 hover:bg-backgroundBoxHover hover:text-foregroundHighlighted transition-colors flex flex-row gap-2 group">
+                        <Image draggable={false} height={30} width={30} alt="Analyze" src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/logo.svg`} className="transition-colors opacity-70 group-hover:opacity-100" />
+                        <div className="h-fit w-fit reduceNav:block hidden">Analyze</div>
+                    </Link>
+                    <Link draggable={false} href="/play" className="text-lg outline-none font-bold navTop:px-3 navTop:py-2 p-1.5 hover:bg-backgroundBoxHover hover:text-foregroundHighlighted transition-colors flex flex-row gap-2 group">
+                        <Image draggable={false} height={30} width={30} alt="Play Bots" src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/standard.svg`} className="transition-colors opacity-70 group-hover:opacity-100" />
+                        <div className="h-fit w-fit reduceNav:block hidden">Play Bots</div>
+                    </Link>
+                    <div onMouseEnter={() => setOpenedMenu("puzzles")} className="text-lg outline-none font-bold navTop:px-3 navTop:py-2 p-1.5 hover:bg-backgroundBoxHover hover:text-foregroundHighlighted transition-colors flex flex-row gap-2 group cursor-pointer">
+                        <Image draggable={false} height={30} width={30} alt="Puzzles" src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/images/puzzle.svg`} className="transition-colors opacity-70 group-hover:opacity-100" />
+                        <div className="h-fit w-fit reduceNav:block hidden">Puzzles</div>
+                    </div>
                     {topLinks.map((link, i) => {
                         return (
                             <button onClick={link?.click} onMouseEnter={link?.hover} onMouseLeave={link?.unHover} type="button" key={i} className="text-lg outline-none font-bold navTop:px-3 navTop:py-2 p-1.5 hover:bg-backgroundBoxHover hover:text-foregroundHighlighted transition-colors flex flex-row gap-2">
@@ -97,9 +110,10 @@ export default function Nav() {
                     })}
                 </div>
             </div>
-            <div ref={menuRef} style={{display: openedMenu ? '' : 'none'}} className="navTop:h-full h-fit max-h-[calc(100vh-42px)] navTop:max-h-full z-[500] p-2 bg-backgroundBoxDarker absolute navTop:left-full top-full navTop:top-0 select-none navTop:w-fit w-fit min-w-[300px] overflow-y-auto">
+            <div ref={menuRef} style={{display: openedMenu ? '' : 'none'}} className="navTop:h-full h-fit max-h-[calc(100vh-42px)] navTop:max-h-full z-[500] p-2 bg-backgroundBoxDarker absolute navTop:left-full top-full navTop:top-0 select-none navTop:w-fit w-fit min-w-[300px] overflow-y-auto border-l border-border shadow-2xl">
                 <Settings hidden={openedMenu !== 'settings'} />
+                <PuzzlesMenu hidden={openedMenu !== 'puzzles'} />
             </div>
         </nav>
     )
-}
+}

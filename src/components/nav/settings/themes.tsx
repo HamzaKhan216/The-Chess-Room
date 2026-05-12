@@ -11,7 +11,7 @@ interface boardTheme {
 }
 
 export const boardThemes: boardTheme[] = [
-    { label: "Green", black: "#779556", white: "#ebecd0", highlight: "#ffff33" },
+    { label: "Knight's Court", black: "#4A6FA5", white: "#E8DCC8", highlight: "#D4A843" },
     { label: "Brown", black: "#b58863", white: "#f0d9b5", highlight: "#ffff33" },
     { label: "Blue", black: "#4d6d92", white: "#ececd7", highlight: "#00a5ff" },
     { label: "Gray", black: "#4f4f4f", white: "#e3e3e3", highlight: "#ffff33" },

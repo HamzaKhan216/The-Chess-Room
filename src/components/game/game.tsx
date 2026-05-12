@@ -15,6 +15,10 @@ import { ErrorsContext } from "@/context/errors"
 import { maxVertical, navTop } from "../../../tailwind.config"
 import { ConfigContext } from "@/context/config"
 import GameButtons from "../menu/analysis/gameButtons"
+import { useStockfish } from "@/hooks/useStockfish"
+import { useGameTTS } from "@/hooks/useGameTTS"
+import { useGameControls } from "@/hooks/useGameControls"
+import { getBotCommentary } from "@/config/bots"
 
 // const NOT_SUPPORTED_WASM_THREADS_WARNING = ['WebAssembly threads not supported', 'The app may run slower. Try updating your browser for better performance.']
 const NOT_SUPPORTED_WASM_WARNING = ['WebAssembly not supported', 'The app may run very slow. Try updating your browser for better performance.']
@@ -121,7 +125,6 @@ export default function Game() {
     const lastSpokenMoveRef = useRef<number>(-1)
     const dragRef = useRef(drag)
 
-    const engineWorkerRef = useRef<Worker | null>(null)
 
     const analyzingMoveRef = useRef<boolean>(analyzingMove)
 
@@ -144,45 +147,16 @@ export default function Game() {
         })()
     }, [])
 
-    useEffect(() => {
-        if (!wasmThreadsSupported()) {
-            if (!wasmSupported()) {
-                // Web Assembly not Supported
-                pushPageWarning(setErrors, NOT_SUPPORTED_WASM_WARNING[0], NOT_SUPPORTED_WASM_WARNING[1])
-                engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/engine/stockfish-asm.js`)
-            } else {
-                // Web Assembly Threads not Supported
-                // pushPageWarning(setErrors, NOT_SUPPORTED_WASM_THREADS_WARNING[0], NOT_SUPPORTED_WASM_THREADS_WARNING[1])
-                engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/engine/stockfish-single.js`)
-            }
-        } else {
-            // Supported
-            engineWorkerRef.current = new window.Worker(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/engine/stockfish.js`)
-        }
-
-        const stockfish = engineWorkerRef.current
-
-        const threads = navigator.hardwareConcurrency ?? 1
-        const hash = Math.floor(getAproxMemory() / 4)
-
-        const errorTimeout = setTimeout(() => pushPageError(setErrors, 'The browser is having some troubles loading Stockfish', "If the app doesn't work properly try restarting the browser."), 15000);
-        (async () => {
-            await prepareStockfish(stockfish, threads, hash)
-            clearTimeout(errorTimeout)
-        })()
-
-        return () => clearTimeout(errorTimeout)
-    }, [])
+    const { isReady: engineReady, postMessage, workerRef: engineWorkerRef } = useStockfish(
+        (title, msg) => pushPageError(setErrors, title, msg)
+    )
 
     useEffect(() => {
-        if (pageState === 'playBots' && game.length === 1) {
-            const stockfish = engineWorkerRef.current
-            if (stockfish) {
-                stockfish.postMessage("ucinewgame")
-                stockfish.postMessage("isready")
-            }
+        if (pageState === 'playBots' && game.length === 1 && engineReady) {
+            postMessage("ucinewgame")
+            postMessage("isready")
         }
-    }, [pageState, game.length])
+    }, [pageState, game.length, engineReady])
 
     useEffect(() => {
         setAnimation(false)
@@ -200,32 +174,27 @@ export default function Game() {
         const chess = new Chess(lastMove.fen)
         if (chess.isGameOver()) return
 
-        // If it's the bot's turn
         const isBotTurn = chess.turn() === (white ? 'b' : 'w')
         
-        if (isBotTurn) {
+        if (isBotTurn && engineReady) {
             const timer = setTimeout(async () => {
-                const stockfish = engineWorkerRef.current
-                if (!stockfish) return
-
-                stockfish.postMessage(`setoption name Skill Level value ${botDifficulty}`)
+                postMessage(`setoption name Skill Level value ${botDifficulty}`)
                 
                 const signal = analyzeController.signal
-                const { bestMove, bestMoveCoronation } = await analyze(stockfish, lastMove.fen, depth, signal)
+                const { bestMove, bestMoveCoronation } = await analyze(engineWorkerRef.current!, lastMove.fen, depth, signal)
                 
                 if (bestMove) {
                     const from = deformatSquare(bestMove[0])
                     const to = deformatSquare(bestMove[1])
                     
-                    // Reset skill level so the UI analysis is GM level
-                    stockfish.postMessage(`setoption name Skill Level value 20`)
+                    postMessage(`setoption name Skill Level value 20`)
                     analyzeMove(lastMove.fen, { from, to, promotion: bestMoveCoronation }, lastMove.sacrifice ?? false, lastMove.previousStaticEvals ?? [], true, lastMove.bestMoveSan)
                 }
             }, 1000)
 
             return () => clearTimeout(timer)
         }
-    }, [game, moveNumber, pageState, analyzingMove, white, botDifficulty])
+    }, [game, moveNumber, pageState, analyzingMove, white, botDifficulty, engineReady])
 
     const requestedAiMoves = useRef<Set<number>>(new Set())
 
@@ -239,65 +208,10 @@ export default function Game() {
         requestedAiMoves.current.add(moveNumber)
 
         const botName = players.find(p => p.name !== "You")?.name || players[1].name
-        const rating = lastMove.moveRating || 'good'
-        const stdComment = lastMove.comment || ''
-
         const botColor = players[0].name !== "You" ? 'w' : 'b'
-        // lastMove.color is the color to move NEXT.
-        // Therefore, if lastMove.color !== botColor, the bot just finished its move.
         const isBotMove = lastMove.color !== botColor
 
-        let hardcodedComment = stdComment
-        
-        if (botName.includes("Jimmy")) {
-            if (isBotMove) {
-                if (rating === "blunder") hardcodedComment = `Oops! I think I messed up. ${stdComment}`
-                else if (rating === "mistake") hardcodedComment = `Ah, maybe that wasn't my best move. ${stdComment}`
-                else if (rating === "inaccuracy") hardcodedComment = `I probably could have done better there. ${stdComment}`
-                else if (rating === "best") hardcodedComment = `Haha, I played the best move! ${stdComment}`
-                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Wow, look at me go! ${stdComment}`
-                else hardcodedComment = `Not bad for a casual player! ${stdComment}`
-            } else {
-                if (rating === "blunder") hardcodedComment = `Oops! That looks like a blunder! ${stdComment}`
-                else if (rating === "mistake") hardcodedComment = `Careful! That might be a mistake. ${stdComment}`
-                else if (rating === "inaccuracy") hardcodedComment = `Hmm, maybe there was a better move. ${stdComment}`
-                else if (rating === "best") hardcodedComment = `Great move! ${stdComment}`
-                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Wow, amazing move! ${stdComment}`
-                else hardcodedComment = `Nice! ${stdComment}`
-            }
-        } else if (botName.includes("Scarlett")) {
-            if (isBotMove) {
-                if (rating === "blunder") hardcodedComment = `Argh! A rare miscalculation. ${stdComment}`
-                else if (rating === "mistake") hardcodedComment = `Whatever, I'll still crush you. ${stdComment}`
-                else if (rating === "inaccuracy") hardcodedComment = `Even my inaccuracies are aggressive. ${stdComment}`
-                else if (rating === "best") hardcodedComment = `See? I'm unstoppable. ${stdComment}`
-                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Just try and defend against that! ${stdComment}`
-                else hardcodedComment = `The attack continues. ${stdComment}`
-            } else {
-                if (rating === "blunder") hardcodedComment = `What were you thinking?! Huge blunder! ${stdComment}`
-                else if (rating === "mistake") hardcodedComment = `Terrible mistake. I will punish that. ${stdComment}`
-                else if (rating === "inaccuracy") hardcodedComment = `Weak move. ${stdComment}`
-                else if (rating === "best") hardcodedComment = `I suppose that's the best move. ${stdComment}`
-                else if (rating === "great" || rating === "brilliant") hardcodedComment = `You got lucky with that brilliant move. ${stdComment}`
-                else hardcodedComment = `Interesting... ${stdComment}`
-            }
-        } else if (botName.includes("Magnus")) {
-            if (isBotMove) {
-                if (rating === "blunder") hardcodedComment = `A mouse slip in my head. Unbelievable. ${stdComment}`
-                else if (rating === "mistake") hardcodedComment = `I'm playing too fast. ${stdComment}`
-                else if (rating === "inaccuracy") hardcodedComment = `Suboptimal, but it complicates the position. ${stdComment}`
-                else if (rating === "best") hardcodedComment = `As expected from a World Champion. ${stdComment}`
-                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Pure intuition. ${stdComment}`
-                else hardcodedComment = `Improving my position. ${stdComment}`
-            } else {
-                if (rating === "blunder") hardcodedComment = `A complete hallucination. Blunder. ${stdComment}`
-                else if (rating === "mistake") hardcodedComment = `Positional mistake. You're losing your grip. ${stdComment}`
-                else if (rating === "inaccuracy") hardcodedComment = `Slight inaccuracy. I'll squeeze this advantage. ${stdComment}`
-                else if (rating === "best") hardcodedComment = `The most principled continuation. ${stdComment}`
-                else if (rating === "great" || rating === "brilliant") hardcodedComment = `Excellent tactical vision. ${stdComment}`
-                else hardcodedComment = `Solid play. ${stdComment}`
-            }
-        }
+        const hardcodedComment = getBotCommentary(botName, lastMove.moveRating, isBotMove, lastMove.comment || '')
 
         setGame(prev => {
             const newGame = [...prev]
@@ -305,7 +219,7 @@ export default function Game() {
             return newGame
         })
 
-    }, [game, moveNumber, pageState, analyzingMove])
+    }, [game, moveNumber, pageState, analyzingMove, players])
 
     useEffect(() => {
         tabRef.current = tab
@@ -319,82 +233,15 @@ export default function Game() {
         ttsSpeakingRef.current = configContext.ttsSpeaking[0]
     }, [configContext.ttsEnabled[0], configContext.ttsSpeaking[0]])
 
-    useEffect(() => {
-        if (!playing) {
-            if (intervalRef.current) clearTimeout(intervalRef.current)
-            return
-        }
-
-        function playLoop() {
-            // Check both our state and the browser's native state
-            const isSpeaking = ttsSpeakingRef.current || window.speechSynthesis.speaking;
-
-            if (ttsEnabledRef.current && isSpeaking) {
-                // If speaking, check again sooner (every 100ms) to move as soon as it ends
-                intervalRef.current = setTimeout(playLoop, 100)
-                return
-            }
-
-            if (ttsEnabledRef.current && lastSpokenMoveRef.current !== moveNumber) {
-                const currentMove = game[moveNumber];
-                const textToSpeak = currentMove?.aiComment || currentMove?.comment;
-                if (textToSpeak) {
-                    lastSpokenMoveRef.current = moveNumber;
-                    window.speechSynthesis.cancel();
-                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                    utterance.rate = 1.0;
-                    utterance.pitch = 1.0;
-                    
-                    const botName = players.find(p => p.name !== "You")?.name || "";
-                    const voices = window.speechSynthesis.getVoices();
-                    let voice;
-
-                    if (botName.includes("Jimmy")) {
-                        voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('David') || v.name.includes('Alex') || v.name.includes('Male')));
-                    } else if (botName.includes("Scarlett")) {
-                        voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Female')));
-                    } else if (botName.includes("Magnus")) {
-                        voice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('George') || v.name.includes('Daniel') || v.name.includes('UK') || v.name.includes('GB')));
-                    }
-
-                    if (!voice) {
-                        // Fallback to high quality voices if available
-                        voice = voices.find(v => v.name === 'Google US English' || v.name.includes('Natural') || v.name.includes('Premium'));
-                    }
-
-                    if (voice) {
-                        utterance.voice = voice;
-                    }
-                    utterance.onstart = () => {
-                        configContext.ttsSpeaking[1](true);
-                        ttsSpeakingRef.current = true;
-                    };
-                    utterance.onend = () => {
-                        configContext.ttsSpeaking[1](false);
-                        ttsSpeakingRef.current = false;
-                    };
-                    utterance.onerror = () => {
-                        configContext.ttsSpeaking[1](false);
-                        ttsSpeakingRef.current = false;
-                    };
-                    window.speechSynthesis.speak(utterance);
-                    intervalRef.current = setTimeout(playLoop, 100);
-                    return;
-                }
-            }
-
-            gameController.forward()
-            // Wait 1 second before the next move
-            intervalRef.current = setTimeout(playLoop, 1000)
-        }
-
-        // Start the loop with a 1s delay for the first move (to allow current speech to start)
-        intervalRef.current = setTimeout(playLoop, 1000)
-
-        return () => {
-            if (intervalRef.current) clearTimeout(intervalRef.current)
-        }
-    }, [playing])
+    useGameTTS({
+        enabled: configContext.ttsEnabled[0],
+        playing,
+        moveNumber,
+        game,
+        players,
+        onSpeakingChange: configContext.ttsSpeaking[1],
+        onForward: gameController.forward
+    })
 
     function createArrowsObject(length: number) {
         const newArrows: AllGameArrows = {}
@@ -449,85 +296,21 @@ export default function Game() {
         }
     }
 
-    useEffect(() => {
-        let lastPressed = 0
-        function handleKeyDown(e: KeyboardEvent) {
-            const element = e.target as HTMLElement
-            const focusableInputTypes = ['text', 'number', 'password', 'email', 'search', 'tel', 'url']
-            if (element.tagName === 'INPUT' && focusableInputTypes.includes(element.getAttribute('type') ?? '')) return
-            if (element.tagName === 'TEXTAREA') return
-
-            const now = new Date().getTime()
-            const minPressInterval = 25
-
-            switch (e.key) {
-                case 'ArrowLeft':
-                    e.preventDefault()
-                    if (dragRef.current.is) return
-                    if (now - lastPressed < minPressInterval) return
-                    if (analyzingMoveRef.current) return
-
-                    gameController.back()
-
-                    lastPressed = new Date().getTime()
-                    break
-                case 'ArrowRight':
-                    e.preventDefault()
-                    if (dragRef.current.is) return
-                    if (now - lastPressed < minPressInterval) return
-                    if (analyzingMoveRef.current) return
-
-                    gameController.forward()
-
-                    lastPressed = new Date().getTime()
-                    break
-                case 'ArrowUp':
-                    e.preventDefault()
-                    if (dragRef.current.is) return
-                    if (now - lastPressed < minPressInterval) return
-                    if (analyzingMoveRef.current) return
-
-                    gameController.first()
-
-                    lastPressed = new Date().getTime()
-                    break
-                case 'ArrowDown':
-                    e.preventDefault()
-                    if (dragRef.current.is) return
-                    if (now - lastPressed < minPressInterval) return
-                    if (analyzingMoveRef.current) return
-
-                    gameController.last()
-
-                    lastPressed = new Date().getTime()
-                    break
-                case ' ':
-                    e.preventDefault()
-                    if (dragRef.current.is) return
-                    if (now - lastPressed < minPressInterval) return
-                    if (analyzingMoveRef.current) return
-
-                    gameController.togglePlay()
-
-                    lastPressed = new Date().getTime()
-                    break
-                case 'Tab':
-                    e.preventDefault()
-                    if (now - lastPressed < minPressInterval) return
-
-                    const tab = tabRef.current
-
-                    if (pageState === "analyze") {
-                        if (tab === 'summary') setTab('moves')
-                        else if (tab === 'moves') setTab('summary')
-                    }
-                    break
+    useGameControls({
+        onBack: gameController.back,
+        onForward: gameController.forward,
+        onFirst: gameController.first,
+        onLast: gameController.last,
+        onTogglePlay: gameController.togglePlay,
+        onTabSwitch: () => {
+            const currentTab = tabRef.current
+            if (pageState === "analyze") {
+                if (currentTab === 'summary') setTab('moves')
+                else if (currentTab === 'moves') setTab('summary')
             }
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [])
+        },
+        canControl: !drag.is && !analyzingMove
+    })
 
     async function handlePGN(pgn: string, depth: number) {
         const PGN_ERROR = ['Error reading PGN', 'Please, provide a valid PGN.']
@@ -543,8 +326,6 @@ export default function Game() {
         if (!wasmThreadsSupported()) {
             if (!wasmSupported()) {
                 pushPageWarning(setErrors, NOT_SUPPORTED_WASM_WARNING[0], NOT_SUPPORTED_WASM_WARNING[1])
-            } else {
-                // pushPageWarning(setErrors, NOT_SUPPORTED_WASM_THREADS_WARNING[0], NOT_SUPPORTED_WASM_THREADS_WARNING[1])
             }
         }
 
@@ -583,6 +364,12 @@ export default function Game() {
     }
 
     async function handleFEN(fen: string) {
+        // Don't process FEN changes when in Play Bots mode — the bot game
+        // manages its own state and the initial empty FEN from AnalyzeContext
+        // would otherwise reset pageState from 'playBots' → 'loading' → 'default',
+        // causing the menu to switch the tab away from 'playBots'.
+        if (pageState === 'playBots') return
+
         const FEN_ERROR = ['Error reading FEN', 'Please, provide a valid FEN.']
 
         let move
@@ -869,16 +656,7 @@ export default function Game() {
         return noTime
     }
 
-    /**
-     * Finds the most recent remaining clock time for a given color by scanning
-     * backwards through the game array up to the current moveNumber.
-     * Move color in the move object is the color TO MOVE NEXT (after the move),
-     * so a White move has color='b' (Black to move next).
-     * Returns undefined when no %clk data is present in the PGN.
-     */
     function getPlayerClock(isWhite: boolean): number | undefined {
-        // In the move object, color = the side to move NEXT.
-        // A white piece move → color === 'b'. A black piece move → color === 'w'.
         const moveColor = isWhite ? 'b' : 'w'
         for (let i = moveNumber; i >= 1; i--) {
             const m = game[i]

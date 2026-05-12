@@ -9,75 +9,102 @@
 }
 
 :root {
-  --background: #302E2B;
-  --foreground: #dedede;
+  /* Knight's Court — Core Tokens */
+  --accent:           #D4A843;
+  --accent-hover:     #E8C060;
+  --accent-muted:     #A07830;
+  --accent-glow:      rgba(212, 168, 67, 0.18);
 
-  --foregroundHighlighted: #ffffff;
-  --foregroundGrey: #939291;
-  --foregroundBlack: #505050;
-  --foregroundBlackDark: #363636;
+  --bg:               #0D1117;
+  --surface-0:        #0D1117;
+  --surface-1:        #161B22;
+  --surface-2:        #1C2333;
+  --surface-3:        #243048;
+  --surface-4:        #2D3A55;
 
-  --placeholder: #9e9d9c;
+  --text-primary:     #F0F6FC;
+  --text-secondary:   #8B949E;
+  --text-muted:       #484F58;
+  --text-accent:      #D4A843;
 
-  --backgroundBox: #00000033;
-  --backgroundBoxDarker: #121212;
-  --backgroundBoxHover: #00000024;
-  --backgroundBoxBox: #ffffff1a;
-  --backgroundBoxBoxDisabled: #00000024;
-  --backgroundBoxBoxHover: #ffffff29;
-  --backgroundBoxBoxHighlighted: #81b64c;
-  --backgroundBoxBoxHighlightedHover: #8bc550;
-  --backgroundWhiteClock: #f6f6f6;
-  --backgroundBlackClock: #1e1d1c;
+  --sq-light:         #E8DCC8;
+  --sq-dark:          #4A6FA5;
+  --sq-highlight-from: rgba(212, 168, 67, 0.55);
+  --sq-highlight-to:   rgba(212, 168, 67, 0.35);
+  --sq-selected:       rgba(212, 168, 67, 0.70);
+  --sq-legal-move:     rgba(0, 0, 0, 0.20);
+  --sq-legal-capture:  rgba(212, 168, 67, 0.45);
+  --sq-check:          rgba(220, 50, 50, 0.65);
 
-  --foregroundProfileWhite: #ffffff;
-  --foregroundProfileBlack: #1d1c1a;
-  --backgroundProfileWhite: #dbd9d6;
-  --backgroundProfileBlack: #474542;
+  --border:           #21262D;
+  --border-subtle:    #161B22;
 
-  --evaluationBarWhite: #ffffff;
-  --evaluationBarBlack: #403d39;
+  --success:          #3FB950;
+  --warning:          #D29922;
+  --error:            #DA3633;
+  --info:             #4A9EDB;
 
-  --border: #5d5d5d;
-  --borderHighlighted: #949494;
+  /* Legacy Variable Mapping (to maintain compatibility with existing Tailwind classes) */
+  --background: var(--bg);
+  --foreground: var(--text-primary);
 
-  --blackBoard: #779556;
-  --whiteBoard: #ebecd0;
+  --foregroundHighlighted: var(--accent);
+  --foregroundGrey: var(--text-secondary);
+  --foregroundBlack: var(--text-muted);
+  --foregroundBlackDark: var(--surface-2);
 
-  --highlightBrilliant: #26c2a3;
-  --highlightGreat: #749bbf;
-  --highlightBest: #81b64c;
-  --highlightExcellent: #81b64c;
-  --highlightGood: #95b776;
-  --highlightBook: #d5a47d;
-  --highlightInaccuracy: #f7c631;
-  --highlightMistake: #ffa459;
-  --highlightMiss: #ff7769;
-  --highlightBlunder: #fa412d;
+  --placeholder: var(--text-muted);
 
-  --normalArrow: #ffaa00;
-  --bestArrow: #9fcf3f;
-  --badArrow: #eb6150;
+  --backgroundBox: var(--surface-1);
+  --backgroundBoxDarker: var(--surface-0);
+  --backgroundBoxHover: var(--surface-2);
+  --backgroundBoxBox: var(--surface-1);
+  --backgroundBoxBoxDisabled: rgba(36, 48, 72, 0.2);
+  --backgroundBoxBoxHover: var(--surface-2);
+  --backgroundBoxBoxHighlighted: var(--accent);
+  --backgroundBoxBoxHighlightedHover: var(--accent-hover);
+  
+  --backgroundWhiteClock: var(--surface-1);
+  --backgroundBlackClock: var(--surface-2);
 
-  --winGreen: #81b64c;
-  --lossRed: #fa412d;
+  --foregroundProfileWhite: var(--text-primary);
+  --foregroundProfileBlack: var(--text-primary);
+  --backgroundProfileWhite: var(--surface-1);
+  --backgroundProfileBlack: var(--surface-1);
 
-  --scrollbarColor: #494949;
+  --evaluationBarWhite: var(--text-primary);
+  --evaluationBarBlack: var(--surface-2);
 
-  --error: #fa412d;
-  --warning: #b8860b;
+  --borderHighlighted: var(--accent);
+
+  --blackBoard: var(--sq-dark);
+  --whiteBoard: var(--sq-light);
+
+  --winGreen: var(--success);
+  --lossRed: var(--error);
+
+  --scrollbarColor: var(--border);
+  --scrollbarSize: 8px;
+
+  /* Radius mapping */
+  --borderRoundness: 4px;
+  --borderExtraRoundness: 8px;
 
   --shadowBoxBoxHighlighted: 0 0 8px;
-
-  --borderRoundness: .25rem;
-  --borderExtraRoundness: .5rem;
-
-  --scrollbarSize: 8px;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), serif;
+}
+
+.font-mono, .monospace {
+  font-family: var(--font-mono), monospace;
 }
 
 * {

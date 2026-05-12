@@ -2,7 +2,7 @@
 
 import { createContext, useState, Dispatch, SetStateAction, useRef } from 'react'
 
-export type menu = "settings" | null
+export type menu = "settings" | "puzzles" | null
 
 export interface usedRatings {
     brilliant: boolean,

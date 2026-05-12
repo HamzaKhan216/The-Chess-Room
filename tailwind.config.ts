@@ -69,6 +69,37 @@ export default {
 
         error: "var(--error)",
         warning: "var(--warning)",
+
+        // Knight's Court Design System
+        accent: "var(--accent)",
+        "accent-hover": "var(--accent-hover)",
+        "accent-muted": "var(--accent-muted)",
+        
+        surface: {
+          0: "var(--surface-0)",
+          1: "var(--surface-1)",
+          2: "var(--surface-2)",
+          3: "var(--surface-3)",
+          4: "var(--surface-4)",
+        },
+
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          accent: "var(--text-accent)",
+        },
+
+        sq: {
+          light: "var(--sq-light)",
+          dark: "var(--sq-dark)",
+          highlight: {
+            from: "var(--sq-highlight-from)",
+            to: "var(--sq-highlight-to)",
+          },
+          selected: "var(--sq-selected)",
+          check: "var(--sq-check)",
+        }
       },
       borderRadius: {
         borderRoundness: "var(--borderRoundness)",

@@ -16,10 +16,12 @@ import Moves from "./analysis/moves/moves"
 import getOverallGameComment from "./analysis/moves/overallGameComment"
 import SelectLichessOrgGame from "./analyze/selectLichessOrg"
 import PlayBots from "./play/playBots"
+import { useRouter } from "next/navigation"
 
 export type platform = "chessCom" | "lichessOrg"
 
 export default function Menu() {
+    const router = useRouter()
     const [username, setUsername] = useState<{platform: platform, username: string}>({platform: "chessCom", username: ""})
 
     const [selected, select] = useState(0)
@@ -46,24 +48,21 @@ export default function Menu() {
     const menuRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        if (pageState === 'default') setTab('analyze')
-        if (pageState === 'loading') setTab('analyze')
-        if (pageState === 'analyze') setTab('summary')
         switch (pageState) {
             case 'default':
-                setTab('analyze')
+                if (tab !== 'analyze' && tab !== 'selectGame') setTab('analyze')
                 break
             case 'loading':
-                setTab('analyze')
+                if (tab !== 'analyze') setTab('analyze')
                 break
             case 'analyze':
-                setTab('summary')
+                if (tab === 'analyze') setTab('summary')
                 break
             case 'analyzeCustom':
                 setTab('moves')
                 break
             case 'playBots':
-                setTab('playBots')
+                if (tab !== 'playBots' && tab !== 'moves' && tab !== 'summary') setTab('playBots')
                 break
         }
     }, [pageState])
@@ -104,7 +103,6 @@ export default function Menu() {
     const tabs: Tab[] = [
         { label: `Analize${pageState === 'analyze' || pageState === 'analyzeCustom' ? ' new' : ''} Game`, state: "analyze", icon: (className: string) => <Lens class={className} size={20} />, show: true, onClick: () => { if (pageState === 'analyze' || pageState === 'analyzeCustom') setData({ format: "fen", string: "" }); if (tab === 'selectGame') stopSelecting() } },
         { label: "Choose Game", state: "selectGame", icon: (className: string) => <Pawn class={className} size={20} />, show: tab === 'selectGame', onClick: () => { } },
-        { label: "Play Bots", state: "playBots", icon: (className: string) => <BoardIcon class={className} size={20} />, show: true, onClick: () => { setTab('playBots') } },
         { label: "Summary", state: "summary", icon: (className: string) => <Star class={className} size={20} />, show: pageState === 'analyze' || pageState === 'playBots', onClick: () => { } },
         { label: "Moves", state: 'moves', icon: (className: string) => <BoardIcon class={className} size={20} />, show: pageState === 'analyze' || pageState === "analyzeCustom" || pageState === 'playBots', onClick: () => { } }
     ]
