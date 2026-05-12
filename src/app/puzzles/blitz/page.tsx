@@ -36,6 +36,7 @@ export default function BlitzPuzzlesPage() {
   const [highScore, setHighScore] = useState(0);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [playedIds, setPlayedIds] = useState<string[]>([]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const fetchingRef = useRef(false);
@@ -79,7 +80,7 @@ export default function BlitzPuzzlesPage() {
     try {
       const { min, max } = DIFFICULTY_MAP[difficulty];
       const rating = (min + max) / 2;
-      const res = await fetch(`/api/puzzle/blitz?rating=${rating}`);
+      const res = await fetch(`/api/puzzle/blitz?rating=${rating}&excludeIds=${playedIds.join(',')}`);
       const data = await res.json();
       if (data.puzzles) {
         setPuzzleQueue((prev) => [...prev, ...data.puzzles]);
@@ -104,6 +105,7 @@ export default function BlitzPuzzlesPage() {
     // Initial fetch
     const { min, max } = DIFFICULTY_MAP[difficulty];
     const rating = (min + max) / 2;
+    setPlayedIds([]); // Reset for new game
     try {
       const res = await fetch(`/api/puzzle/blitz?rating=${rating}`);
       const data = await res.json();
@@ -122,6 +124,7 @@ export default function BlitzPuzzlesPage() {
 
   const applyPuzzle = (puzzle: PuzzleData) => {
     setCurrentPuzzle(puzzle);
+    setPlayedIds(prev => [...prev, puzzle.id]); // Track played IDs
     const newChess = new Chess(puzzle.fen);
     setChess(newChess);
     setFlash(null);

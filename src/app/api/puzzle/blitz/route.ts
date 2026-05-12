@@ -20,6 +20,9 @@ const getCachedIdPool = unstable_cache(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const rating = parseInt(searchParams.get('rating') || '1200');
+  const excludeIds = new Set(
+    searchParams.get('excludeIds')?.split(',').filter(Boolean) || []
+  );
 
   // Bucketing logic to share cache pools across users
   const bucket = Math.floor(rating / 100) * 100;
@@ -33,9 +36,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No puzzles found in this range' }, { status: 404 });
     }
 
-    // Pick 5 random unique IDs from the pool
+    // Filter out excluded IDs
+    const availableIds = pool.filter(id => !excludeIds.has(id));
+    
+    // Pick 5 random unique IDs from the available pool
     const selectedIds: string[] = [];
-    const poolCopy = [...pool];
+    const sourcePool = availableIds.length >= 5 ? availableIds : pool;
+    const poolCopy = [...sourcePool];
     
     for (let i = 0; i < 5 && poolCopy.length > 0; i++) {
       const randomIndex = Math.floor(Math.random() * poolCopy.length);
@@ -52,12 +59,12 @@ export async function GET(request: NextRequest) {
     const puzzles = result.rows.map(row => {
       const allMoves = (row.moves as string).split(' ');
       return {
-        id:           row.id,
-        fen:          row.fen,
-        rating:       row.rating,
-        themes:       (row.themes as string).split(' '),
+        id: row.id,
+        fen: row.fen,
+        rating: row.rating,
+        themes: (row.themes as string).split(' '),
         opponentMove: allMoves[0],
-        solution:     [allMoves[1]], // Blitz puzzles are 1-move only
+        solution: [allMoves[1]], // Blitz puzzles are 1-move only
       };
     });
 

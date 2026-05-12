@@ -64,8 +64,12 @@
   --backgroundBoxBoxHighlighted: var(--accent);
   --backgroundBoxBoxHighlightedHover: var(--accent-hover);
   
-  --backgroundWhiteClock: var(--surface-1);
-  --backgroundBlackClock: var(--surface-2);
+  --backgroundWhiteClock: var(--surface-2);
+  --backgroundBlackClock: var(--surface-3);
+
+  --normalArrow: rgba(255, 255, 255, 0.5);
+  --bestArrow: var(--accent);
+  --badArrow: var(--error);
 
   --foregroundProfileWhite: var(--text-primary);
   --foregroundProfileBlack: var(--text-primary);
