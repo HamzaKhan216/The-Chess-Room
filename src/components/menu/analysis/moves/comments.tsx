@@ -54,12 +54,15 @@ export function FormatEval(props: { evaluation: string[], white: boolean, smalle
 export default function Comments(props: { aiComment?: string, comment?: string, rating?: moveRating, moveSan?: string, evaluation: string[], white: boolean, overallGameComment: string, moveNumber?: number }) {
     const { aiComment, comment, rating, moveSan, evaluation, white, overallGameComment, moveNumber } = props
     const { ttsEnabled: [ttsEnabled, setTtsEnabled], ttsSpeaking: [, setTtsSpeaking] } = useContext(ConfigContext);
-    const { players: [players] } = useContext(AnalyzeContext);
+    const { players: [players], playing: [playing] } = useContext(AnalyzeContext);
 
     useEffect(() => {
-        if (!ttsEnabled) {
-            window.speechSynthesis.cancel();
-            setTtsSpeaking(false);
+        if (!ttsEnabled || playing) {
+            // If playing, let useGameTTS autoplay loop handle speech entirely
+            if (!ttsEnabled) {
+                window.speechSynthesis.cancel();
+                setTtsSpeaking(false);
+            }
             return;
         }
 
@@ -102,10 +105,12 @@ export default function Comments(props: { aiComment?: string, comment?: string, 
         }
 
         return () => {
-            window.speechSynthesis.cancel();
-            setTtsSpeaking(false);
+            if (!playing) {
+                window.speechSynthesis.cancel();
+                setTtsSpeaking(false);
+            }
         };
-    }, [aiComment, comment, ttsEnabled]);
+    }, [aiComment, comment, ttsEnabled, playing]);
 
     if (!moveSan || moveNumber === 0) {
         if (overallGameComment && (moveNumber === -1 || !moveSan)) {

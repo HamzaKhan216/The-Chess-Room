@@ -650,8 +650,10 @@ export default function Board(props: { cleanArrows: () => void, sacrifice?: bool
 
     const adaptedCoronationSquare = coronation.movement[0] ? adaptSquare(coronation.movement[0]) : null
 
+    const themeClass = `theme-${boardThemes[boardTheme].label.toLowerCase().replace("'", "").replace(" ", "-")}-board`
+
     return (
-        <div ref={boardRef} onContextMenu={e => e.preventDefault()} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} className="grid w-fit h-fit relative" style={{ gridTemplateColumns: `repeat(8, ${squareSize}px)`, pointerEvents: drag.is ? 'none' : 'unset' }}>
+        <div ref={boardRef} onContextMenu={e => e.preventDefault()} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} className={`grid w-fit h-fit relative ${themeClass}`} style={{ gridTemplateColumns: `repeat(8, ${squareSize}px)`, pointerEvents: drag.is ? 'none' : 'unset' }}>
             {
                 (() => {
                     const squares: JSX.Element[] = []

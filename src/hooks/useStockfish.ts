@@ -29,14 +29,25 @@ export function useStockfish(setErrors: (title: string, message: string) => void
         const threads = navigator.hardwareConcurrency ?? 1;
         const hash = Math.floor(getMem() / 4);
 
+        stockfish.onerror = (e) => {
+            console.error("Stockfish worker error:", e);
+            setErrors('Engine Error', "There was an error initializing the Stockfish engine. Make sure your browser supports WebAssembly and threads, and you have a stable network to download the engine files.");
+        };
+
         const errorTimeout = setTimeout(() => 
             setErrors('Engine Timeout', "The browser is taking longer than expected to download the Chess Engine. If your connection is slow, it may take up to a minute on the first load (approx. 69 MB). Try waiting a bit longer or restarting your browser."), 
         90000);
 
-        prepareEngine(stockfish, threads, hash).then(() => {
-            clearTimeout(errorTimeout);
-            setIsReady(true);
-        });
+        prepareEngine(stockfish, threads, hash)
+            .then(() => {
+                clearTimeout(errorTimeout);
+                setIsReady(true);
+            })
+            .catch((err) => {
+                console.error("Stockfish initialization rejected:", err);
+                clearTimeout(errorTimeout);
+                setErrors('Engine Error', "Failed to prepare the chess engine. Please try reloading the page or restarting your browser.");
+            });
 
         return () => {
             clearTimeout(errorTimeout);

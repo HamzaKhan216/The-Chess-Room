@@ -127,3 +127,66 @@ h1, h2, h3, .font-display {
   scrollbar-width: var(--scrollbarSize);
   scrollbar-color: var(--scrollbarColor) transparent;
 }
+
+/* Custom Chess Board SVG Arrow Styling fixes */
+.fill-bestArrow {
+  color: var(--bestArrow) !important;
+}
+
+.fill-normalArrow {
+  color: var(--normalArrow) !important;
+}
+
+/* Green Board specific overrides (Chess.com theme styles) */
+.theme-green-board {
+  --bestArrow: #96bc4b !important;
+  --normalArrow: rgba(150, 188, 75, 0.8) !important;
+  --sq-highlight-from: rgba(247, 247, 105, 0.55) !important;
+  --sq-highlight-to: rgba(247, 247, 105, 0.35) !important;
+  --sq-selected: rgba(247, 247, 105, 0.70) !important;
+}
+
+/* Brown Board specific overrides (Warm Wood styles) */
+.theme-brown-board {
+  --bestArrow: #d08b18 !important;
+  --normalArrow: rgba(208, 139, 24, 0.8) !important;
+  --sq-highlight-from: rgba(247, 247, 105, 0.55) !important;
+  --sq-highlight-to: rgba(247, 247, 105, 0.35) !important;
+  --sq-selected: rgba(247, 247, 105, 0.70) !important;
+}
+
+/* Gray Board specific overrides (Sleek Grayscale styles) */
+.theme-gray-board {
+  --bestArrow: #00b4d8 !important;
+  --normalArrow: rgba(0, 180, 216, 0.8) !important;
+  --sq-highlight-from: rgba(0, 180, 216, 0.45) !important;
+  --sq-highlight-to: rgba(0, 180, 216, 0.25) !important;
+  --sq-selected: rgba(0, 180, 216, 0.60) !important;
+}
+
+/* Red Board specific overrides (Terracotta styles) */
+.theme-red-board {
+  --bestArrow: #e74c3c !important;
+  --normalArrow: rgba(231, 76, 60, 0.8) !important;
+  --sq-highlight-from: rgba(231, 76, 60, 0.45) !important;
+  --sq-highlight-to: rgba(231, 76, 60, 0.25) !important;
+  --sq-selected: rgba(231, 76, 60, 0.60) !important;
+}
+
+/* Purple Board specific overrides (Lavender styles) */
+.theme-purple-board {
+  --bestArrow: #9b59b6 !important;
+  --normalArrow: rgba(155, 89, 182, 0.8) !important;
+  --sq-highlight-from: rgba(155, 89, 182, 0.45) !important;
+  --sq-highlight-to: rgba(155, 89, 182, 0.25) !important;
+  --sq-selected: rgba(155, 89, 182, 0.60) !important;
+}
+
+/* Orange Board specific overrides (Fiery Orange styles) */
+.theme-orange-board {
+  --bestArrow: #e67e22 !important;
+  --normalArrow: rgba(230, 126, 34, 0.8) !important;
+  --sq-highlight-from: rgba(230, 126, 34, 0.45) !important;
+  --sq-highlight-to: rgba(230, 126, 34, 0.25) !important;
+  --sq-selected: rgba(230, 126, 34, 0.60) !important;
+}

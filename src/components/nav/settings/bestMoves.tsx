@@ -12,6 +12,8 @@ export default function BestMoves() {
     const [showArrows, setShowArrows] = configContext.showArrows
     const [arrowAfterMove, setArrowAfterMove] = configContext.arrowAfterMove
 
+    const themeClass = `theme-${boardThemes[boardTheme].label.toLowerCase().replace("'", "").replace(" ", "-")}-board`
+
     useEffect(() => {
         const showArrows = localStorage.getItem('showArrows')
         if (!showArrows) return
@@ -56,7 +58,7 @@ export default function BestMoves() {
         <section>
             <h1 className="block bg-backgroundBoxBox font-bold text-nowrap p-3 text-foreground">Best Moves</h1>
             <button onClick={toggleShowArrows} type="button" className="flex flex-row gap-2 items-center hover:text-foregroundHighlighted hover:bg-black transition-colors w-full relative p-2">
-                <div className="grid grid-cols-2 w-fit relative">
+                <div className={`grid grid-cols-2 w-fit relative ${themeClass}`}>
                     {Array.from({ length: 4 }).map((_, i) => {
                         const isEvenCol = i % 2 === 0
                         const isEvenRow = Math.floor(i / 2) % 2 === 0
@@ -75,7 +77,7 @@ export default function BestMoves() {
                 <div style={{ backgroundColor: "var(--foreground)", display: showArrows ? '' : 'none' }} className="w-3 h-3 rounded-full absolute right-3" />
             </button>
             <button onClick={toggleArrowAfterMove} type="button" className="flex flex-row gap-2 items-center hover:text-foregroundHighlighted hover:bg-black transition-colors w-full relative p-2">
-                <div className="grid grid-cols-2 w-fit relative">
+                <div className={`grid grid-cols-2 w-fit relative ${themeClass}`}>
                     {Array.from({ length: 4 }).map((_, i) => {
                         const isEvenCol = i % 2 === 0
                         const isEvenRow = Math.floor(i / 2) % 2 === 0
