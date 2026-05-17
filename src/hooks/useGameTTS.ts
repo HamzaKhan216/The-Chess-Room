@@ -22,56 +22,78 @@ export function useGameTTS({
     onForward
 }: TTSHookProps) {
     const lastSpokenMoveRef = useRef<number>(-1);
-    const intervalRef = useRef<NodeJS.Timeout>();
+    const timeoutRef = useRef<NodeJS.Timeout>();
+
+    const enabledRef = useRef(enabled);
+    const moveNumberRef = useRef(moveNumber);
+    const gameRef = useRef(game);
+    const playersRef = useRef(players);
+    const onSpeakingChangeRef = useRef(onSpeakingChange);
+    const onForwardRef = useRef(onForward);
+
+    useEffect(() => {
+        enabledRef.current = enabled;
+        moveNumberRef.current = moveNumber;
+        gameRef.current = game;
+        playersRef.current = players;
+        onSpeakingChangeRef.current = onSpeakingChange;
+        onForwardRef.current = onForward;
+    }, [enabled, moveNumber, game, players, onSpeakingChange, onForward]);
 
     useEffect(() => {
         if (!playing) {
-            if (intervalRef.current) clearTimeout(intervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
             return;
         }
 
         function playLoop() {
+            const currentMoveNumber = moveNumberRef.current;
+            const currentGame = gameRef.current;
+            const currentPlayers = playersRef.current;
+            const currentEnabled = enabledRef.current;
+
             const isSpeaking = speechService.isSpeaking();
 
-            if (enabled && isSpeaking) {
-                intervalRef.current = setTimeout(playLoop, 100);
+            if (currentEnabled && isSpeaking) {
+                timeoutRef.current = setTimeout(playLoop, 100);
                 return;
             }
 
-            if (enabled && lastSpokenMoveRef.current !== moveNumber) {
-                const currentMove = game[moveNumber];
+            if (currentEnabled && lastSpokenMoveRef.current !== currentMoveNumber) {
+                const currentMove = currentGame[currentMoveNumber];
                 const textToSpeak = currentMove?.aiComment || currentMove?.comment;
                 
                 if (textToSpeak) {
-                    lastSpokenMoveRef.current = moveNumber;
+                    lastSpokenMoveRef.current = currentMoveNumber;
                     
-                    const botName = players.find(p => p.name !== "You")?.name || "";
+                    const botName = currentPlayers.find(p => p.name !== "You")?.name || "";
                     const voice = speechService.findVoiceForBot(botName);
 
                     speechService.speak(
                         textToSpeak,
                         { voice },
-                        () => onSpeakingChange(true),
-                        () => onSpeakingChange(false),
-                        () => onSpeakingChange(false)
+                        () => onSpeakingChangeRef.current(true),
+                        () => onSpeakingChangeRef.current(false),
+                        () => onSpeakingChangeRef.current(false)
                     );
                     
-                    intervalRef.current = setTimeout(playLoop, 100);
+                    timeoutRef.current = setTimeout(playLoop, 100);
                     return;
                 }
             }
 
-            onForward();
-            intervalRef.current = setTimeout(playLoop, 1000);
+            onForwardRef.current();
+            timeoutRef.current = setTimeout(playLoop, 1000);
         }
 
-        intervalRef.current = setTimeout(playLoop, 1000);
+        lastSpokenMoveRef.current = -1;
+        timeoutRef.current = setTimeout(playLoop, 1000);
 
         return () => {
-            if (intervalRef.current) clearTimeout(intervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
             speechService.cancel();
         };
-    }, [playing, moveNumber, enabled]);
+    }, [playing]);
 
     return {
         cancel: () => speechService.cancel()
