@@ -87,6 +87,18 @@
   --winGreen: var(--success);
   --lossRed: var(--error);
 
+  /* Rating/Highlight Colors */
+  --highlightBrilliant:  #04b8ad;
+  --highlightGreat:      #5c8bb0;
+  --highlightBest:       #96bc4b;
+  --highlightExcellent:  #96bc4b;
+  --highlightGood:       #95af8a;
+  --highlightBook:       #a98866;
+  --highlightInaccuracy: #f7c045;
+  --highlightMistake:    #e58f2a;
+  --highlightMiss:       #ee6b55;
+  --highlightBlunder:    #ca3531;
+
   --scrollbarColor: var(--border);
   --scrollbarSize: 8px;
 

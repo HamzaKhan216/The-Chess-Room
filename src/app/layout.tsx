@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   title: "Brilliant Chess - Free Chess Analyzer",
   description: "Analyze your chess games and improve your skills completely free.",
   keywords: ["chess", "chess analysis", "free chess analyzer", "free chess.com analyzer", "analyze chess for free", "analyze chess games", "brilliant move chess", "brilliant chess", "brilliant-chess"],
-  authors: [{ name: 'Delo', url: "https://github.com/wdeloo" }],
+  authors: [{ name: 'Delo' }],
   applicationName: "Brilliant Chess",
 
   icons: {

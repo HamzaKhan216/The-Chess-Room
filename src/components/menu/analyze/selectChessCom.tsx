@@ -95,10 +95,10 @@ export function Loading(props: {whatIsLoading: string, abort: () => void}) {
                 <div className="flex flex-col flex-grow">
                     <div className="flex-grow flex flex-col justify-center items-center">
                         <div className="w-[70%] bg-backgroundBox relative overflow-hidden rounded-borderExtraRoundness text-lg text-foregroundGrey flex flex-col gap-14 pb-4 pt-14 items-center">
-                            <div className="w-40 flex flex-col items-center gap-4">
+                            <div className="w-56 flex flex-col items-center gap-4 text-center">
                                 <Files className="animate-[pulse_1.25s_cubic-bezier(0.4,_0,_0.6,_1)_infinite;] scale-x-[-1]" size={60} />
                                 <span className="text-xl text-foreground font-bold">{props.whatIsLoading}</span>
-                                <span className="w-full ml-14">Fetching api{ellipsis}</span>
+                                <span className="w-full whitespace-nowrap">Fetching api{ellipsis}</span>
                             </div>
                             <button onClick={props.abort} className="hover:text-foreground transition-colors" type="button">Cancel</button>
                         </div>
@@ -131,7 +131,7 @@ export function SimpleLoading(props: {whatIsLoading: string}) {
     }, [])
 
     return (
-        <div className="font-extrabold text-2xl animate-[pulse_1.25s_cubic-bezier(0.4,_0,_0.6,_1)_infinite;] w-48 my-4 m-auto">
+        <div className="font-extrabold text-2xl animate-[pulse_1.25s_cubic-bezier(0.4,_0,_0.6,_1)_infinite;] w-56 my-4 m-auto whitespace-nowrap text-center">
             Loading {props.whatIsLoading}{ellipsis}
         </div>
     )

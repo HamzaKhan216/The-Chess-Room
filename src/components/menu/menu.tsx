@@ -101,7 +101,7 @@ export default function Menu() {
     }
 
     const tabs: Tab[] = [
-        { label: `Analize${pageState === 'analyze' || pageState === 'analyzeCustom' ? ' new' : ''} Game`, state: "analyze", icon: (className: string) => <Lens class={className} size={20} />, show: true, onClick: () => { if (pageState === 'analyze' || pageState === 'analyzeCustom') setData({ format: "fen", string: "" }); if (tab === 'selectGame') stopSelecting() } },
+        { label: `Analize${pageState === 'analyze' || pageState === 'analyzeCustom' ? ' new' : ''} Game`, state: "analyze", icon: (className: string) => <Lens class={className} size={20} />, show: pageState !== 'playBots', onClick: () => { if (pageState === 'analyze' || pageState === 'analyzeCustom') setData({ format: "fen", string: "" }); if (tab === 'selectGame') stopSelecting() } },
         { label: "Choose Game", state: "selectGame", icon: (className: string) => <Pawn class={className} size={20} />, show: tab === 'selectGame', onClick: () => { } },
         { label: "Summary", state: "summary", icon: (className: string) => <Star class={className} size={20} />, show: pageState === 'analyze' || pageState === 'playBots', onClick: () => { } },
         { label: "Moves", state: 'moves', icon: (className: string) => <BoardIcon class={className} size={20} />, show: pageState === 'analyze' || pageState === "analyzeCustom" || pageState === 'playBots', onClick: () => { } }

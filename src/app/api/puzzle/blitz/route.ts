@@ -39,14 +39,23 @@ export async function GET(request: NextRequest) {
     // Filter out excluded IDs
     const availableIds = pool.filter(id => !excludeIds.has(id));
     
-    // Pick 5 random unique IDs from the available pool
+    // Pick up to 5 random unique IDs from the available pool
     const selectedIds: string[] = [];
-    const sourcePool = availableIds.length >= 5 ? availableIds : pool;
-    const poolCopy = [...sourcePool];
+    const availableCopy = [...availableIds];
     
-    for (let i = 0; i < 5 && poolCopy.length > 0; i++) {
-      const randomIndex = Math.floor(Math.random() * poolCopy.length);
-      selectedIds.push(poolCopy.splice(randomIndex, 1)[0]);
+    for (let i = 0; i < 5 && availableCopy.length > 0; i++) {
+      const randomIndex = Math.floor(Math.random() * availableCopy.length);
+      selectedIds.push(availableCopy.splice(randomIndex, 1)[0]);
+    }
+
+    // If we couldn't get 5 puzzles from the available pool, fill the remaining slots from the excluded ones
+    if (selectedIds.length < 5) {
+      const remainingNeeded = 5 - selectedIds.length;
+      const excludedCopy = pool.filter(id => excludeIds.has(id) && !selectedIds.includes(id));
+      for (let i = 0; i < remainingNeeded && excludedCopy.length > 0; i++) {
+        const randomIndex = Math.floor(Math.random() * excludedCopy.length);
+        selectedIds.push(excludedCopy.splice(randomIndex, 1)[0]);
+      }
     }
 
     // Batch fetch the 5 puzzles - exactly 1 DB read

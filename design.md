@@ -1,377 +1,635 @@
-# Knight's Court — Design System
+# BrilliantChess — Analyze Tab Design System
 
-## Overview
+## 1. Philosophy
 
-**Knight's Court** is a dark-first chess platform designed around the feeling of playing under a single lamp in a quiet room — intimate, focused, and a little dramatic. The aesthetic departs from chess.com's warm walnut-brown palette entirely, instead using **deep midnight navy** surfaces with **amber/gold** accents. The result feels like a high-end leather-bound chess set rather than a digital game lobby. Every surface, interaction, and piece of typography serves the board — which is always the visual hero.
+BrilliantChess uses a **dark-first, navy-based** design. Every surface is a step in a brightness ladder — no box shadows on dark backgrounds. The **amber gold** accent (`#D4A843`) is reserved exclusively for interactive affordances: active states, primary CTAs, highlights, and borders on focus. It must never fill a large surface.
 
-The layout structure mirrors chess.com closely (board center-left, sidebar right, move list, clocks, controls) but the visual language is wholly distinct: no brown, no green squares, no earth tones.
-
----
-
-## Colors
-
-### Brand & Accent
-| Token | Hex | Usage |
-|---|---|---|
-| `--accent` | `#D4A843` | Primary CTA buttons, active move highlights, interactive gold |
-| `--accent-hover` | `#E8C060` | Hover state — slightly warmer/brighter |
-| `--accent-muted` | `#A07830` | Disabled accent, secondary decorative use |
-| `--accent-glow` | `rgba(212,168,67,0.18)` | Glowing halos on active squares, focused inputs |
-
-> **Why amber, not green?** Chess.com owns the green-board-green-button combination. Amber reads as prestige, chess clocks, and old tournament halls — it's thematically grounded and visually distinct.
-
-### Surfaces (Dark-First, Navy-Based)
-| Token | Hex | Role |
-|---|---|---|
-| `--bg` | `#0D1117` | Root background — deep midnight, near-black navy |
-| `--surface-0` | `#0D1117` | Base: main page background |
-| `--surface-1` | `#161B22` | Cards, sidebar panels, game lobby rows |
-| `--surface-2` | `#1C2333` | Dropdowns, hovered panels, secondary cards |
-| `--surface-3` | `#243048` | Modals, overlays, active context menus |
-| `--surface-4` | `#2D3A55` | Tooltips, focused input backgrounds |
-
-> Elevation is communicated through **surface brightness steps**, never shadows on dark. Each step increases brightness by approximately 8–10 lightness units.
-
-### Board Square Colors
-| Token | Hex | Role |
-|---|---|---|
-| `--sq-light` | `#E8DCC8` | Light board squares — aged parchment, ivory |
-| `--sq-dark` | `#4A6FA5` | Dark board squares — steel blue, like fine lacquered wood |
-| `--sq-highlight-from` | `rgba(212,168,67,0.55)` | Last-move source square |
-| `--sq-highlight-to` | `rgba(212,168,67,0.35)` | Last-move destination square |
-| `--sq-selected` | `rgba(212,168,67,0.7)` | Currently selected piece square |
-| `--sq-legal-move` | `rgba(0,0,0,0.2)` | Legal move dot overlay on empty squares |
-| `--sq-legal-capture` | `rgba(212,168,67,0.45)` | Legal capture ring overlay |
-| `--sq-check` | `rgba(220,50,50,0.65)` | King-in-check highlight |
-
-> **Board identity is critical.** The `#4A6FA5` steel-blue dark square is the single biggest visual differentiator from chess.com. Light squares use aged parchment (`#E8DCC8`) instead of pure cream. The combination reads as refined and immediately unique.
-
-### Text
-| Token | Hex | Usage |
-|---|---|---|
-| `--text-primary` | `#F0F6FC` | Headings, player names, primary content |
-| `--text-secondary` | `#8B949E` | Move notation, ratings, metadata |
-| `--text-muted` | `#484F58` | Timestamps, disabled labels, hints |
-| `--text-accent` | `#D4A843` | Active player name, current move in notation |
-
-### Functional
-| Token | Hex | Usage |
-|---|---|---|
-| `--border` | `#21262D` | Panel separators, card edges |
-| `--border-subtle` | `#161B22` | Hairline dividers inside components |
-| `--success` | `#3FB950` | Win result, connection OK |
-| `--warning` | `#D29922` | Low time warning, flagging |
-| `--error` | `#DA3633` | Loss by checkmate/resign, disconnection |
-| `--info` | `#4A9EDB` | Draw offer, system messages |
+The analyze tab is the heart of the app. The board is always the visual hero. Every other element — sidebar, move list, evaluation bar, controls — exists to serve it.
 
 ---
 
-## Typography
+## 2. Tailwind Token Reference
 
-**Import from Google Fonts:**
-```
-Playfair Display — display headlines only
-DM Sans — all UI text, labels, moves
-JetBrains Mono — move notation, clock, coordinates
-```
+These are the **actual class names used in the codebase**. Always use these — never hardcode hex values in className strings.
 
-### Rationale
-- **Playfair Display** brings editorial prestige to game result screens, modal headings, and the app logo. It has the gravitas of a chess book. Do not use it for body text.
-- **DM Sans** (from Green Deck) handles all UI chrome — clean, geometric, highly legible at 12–14px on dark backgrounds.
-- **JetBrains Mono** is used exclusively for the move list notation (1. e4 e5), clocks (03:42), and coordinate labels (a–h, 1–8). The monospaced column alignment is functionally essential.
-
-### Scale
-| Name | Font | Size / Line Height | Weight | Tracking |
-|---|---|---|---|---|
-| Logo | Playfair Display | 28px / 32px | 700 | -0.02em |
-| Hero | Playfair Display | 48px / 56px | 700 | -0.03em |
-| Modal Title | Playfair Display | 28px / 36px | 700 | -0.02em |
-| Section Title | DM Sans | 18px / 26px | 700 | -0.01em |
-| Card Title | DM Sans | 15px / 22px | 700 | 0 |
-| Body | DM Sans | 14px / 22px | 400 | 0 |
-| Body Small | DM Sans | 12px / 18px | 400 | 0 |
-| Label | DM Sans | 11px / 16px | 700 | 0.08em (uppercase) |
-| Move Notation | JetBrains Mono | 13px / 20px | 400 | 0 |
-| Clock | JetBrains Mono | 36px / 40px | 600 | 0.02em |
-| Coordinates | JetBrains Mono | 10px / 10px | 400 | 0 |
-
----
-
-## Layout & Structure
-
-### Overall Grid
-```
-┌─────────────────────────────────────────────┐
-│  Topnav (56px, --surface-1)                 │
-├──────────────────────────┬──────────────────┤
-│                          │                  │
-│   BOARD AREA             │   SIDEBAR        │
-│   (square, flex-center)  │   (320px fixed)  │
-│                          │                  │
-│                          │  ┌─ Clock ─────┐ │
-│                          │  ├─ Move List ─┤ │
-│                          │  ├─ Controls ──┤ │
-│                          │  └─ Chat ──────┘ │
-│                          │                  │
-└──────────────────────────┴──────────────────┘
-```
-
-- **Topnav**: 56px height, `--surface-1` background, logo left, nav links center, avatar/buttons right.
-- **Board Area**: takes remaining width minus sidebar. Board is always a perfect square, centered both axes, max 640px, min 320px.
-- **Sidebar**: 320px fixed width, `--surface-1` background, flex column with scrollable move list.
-- **Board coordinates** (a–h, 1–8): rendered in `JetBrains Mono 10px`, `--text-muted`, positioned outside the board edge.
-
-### Sidebar Sections (top → bottom)
-1. **Opponent info bar** — avatar (40px circle), name, rating, flag, captured pieces
-2. **Clock** — large JetBrains Mono, changes color below 10s to `--warning`, below 5s pulses `--error`
-3. **Move list** — scrollable, 2-column (white/black), alternating row shading, active move amber-highlighted
-4. **Control strip** — icon buttons: ⟨⟨ First | ⟨ Prev | ⟩ Next | ⟩⟩ Last | ⚑ Resign | ½ Offer Draw
-5. **Your info bar** — mirrors opponent bar, always at bottom of sidebar
-
----
-
-## Board
-
-### Rendering
-- Board is an **8×8 CSS grid** (no canvas unless performance requires it).
-- Each square is a `<div>` with the appropriate `--sq-light` or `--sq-dark` background.
-- Pieces are SVG images, 88% of square size, centered, `pointer-events: none`.
-- **Coordinate labels** sit just outside the board edges: file letters along the bottom (`a–h`), rank numbers along the left (`1–8`), rendered in `JetBrains Mono 10px --text-muted`.
-- A subtle `box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15)` on each square prevents visual bleed between adjacent squares at low resolutions.
-
-### Piece Style
-- Use **Staunton SVG pieces** in two-tone style: White pieces are `#F5F0E8` fill with `#1A1A1A` stroke. Black pieces are `#2A2A2A` fill with `#0D0D0D` stroke.
-- Drop shadow on each piece: `filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4))`.
-- Dragging a piece: scale to `1.15`, slight `z-index` lift, cursor becomes `grabbing`.
-
-### Interaction States
-| State | Visual |
-|---|---|
-| Hover (empty square) | Very subtle `--sq-light`/`--sq-dark` lightening by 8% |
-| Square selected | `--sq-selected` overlay (amber 70% opacity) |
-| Legal move dot | Small dark circle (20% of square) centered on empty square |
-| Legal capture ring | Amber ring at square edge (4px wide) |
-| Last move from | `--sq-highlight-from` amber glow |
-| Last move to | `--sq-highlight-to` amber glow |
-| King in check | `--sq-check` red overlay, subtle pulse animation |
-| Pre-move | Purple overlay `rgba(128,0,255,0.35)` on both source and destination |
-
----
-
-## Components
-
-### Buttons
-- **Primary** — `--accent` fill (#D4A843), `#000000` text, 32px height, 20px horizontal padding, `9999px` border-radius (pill), DM Sans 13px weight 700, uppercase tracking 0.06em. Hover: `--accent-hover` fill + scale 1.03.
-- **Secondary** — `1px --border` stroke, transparent fill, `--text-primary` text. Hover: `--surface-2` background.
-- **Ghost** — text-only, `--text-secondary` color, hover: `--text-primary`.
-- **Icon Button** (control strip) — 36px square, `--surface-2` background, 6px border-radius, `--text-secondary` icon. Hover: `--surface-3`, icon turns `--text-primary`.
-- **Danger** — `--error` fill, white text. Used for Resign.
-
-### Clocks
-```
-┌─────────────────────┐
-│  03:42              │
-└─────────────────────┘
-```
-- `--surface-2` background, 8px border-radius, 16px/8px padding.
-- Font: JetBrains Mono 36px weight 600.
-- **Active player clock**: `--surface-3` background + `2px solid --accent` border, text in `--text-primary`.
-- **Inactive clock**: `--surface-1` background, text in `--text-muted`.
-- **Low time warning** (≤ 10s): text turns `--warning`.
-- **Critical time** (≤ 5s): text turns `--error`, border pulses with `animation: pulse-border 0.5s ease-in-out infinite`.
-
-### Move List
-- Container: scrollable, `--surface-1` background, `--border` right divider.
-- Row: 28px height, DM Sans 13px. Move number in `--text-muted` weight 400. White move text-left, black move text-left in right column.
-- **Current move row**: `--accent-glow` background, move text turns `--accent`.
-- Alternating rows: even rows use `rgba(255,255,255,0.02)` tint.
-- Column widths: `40px` (move number) | `50%` (white) | `50%` (black).
-- Special moves (castling O-O, check +, checkmate #) render the symbol in `--accent`.
-
-### Player Info Bar
-- 48px height, `--surface-1` background.
-- **Avatar**: 36px circle, `2px solid --border` ring. Online indicator: 8px dot, `--success`.
-- **Name**: DM Sans 14px weight 700, `--text-primary`.
-- **Rating**: DM Sans 13px, `--text-secondary`, in parentheses or after `·` separator.
-- **Captured pieces**: miniature SVG piece icons, 16px each, displayed in a flex row with `-4px` overlap (like stacked cards).
-- **Material advantage**: `+N` in DM Sans 12px `--text-accent` next to captured pieces if positive.
-
-### Game Lobby Cards (pre-game)
-- `--surface-1` background, 12px border-radius, no border.
-- Hover: background lightens to `--surface-2`, `transform: translateY(-2px)`, 250ms ease.
-- Time control icon (bullet ⚡, blitz 🔥, rapid ⏱, classical ♟) in `--accent`, 24px.
-- Label in DM Sans 16px weight 700 `--text-primary`.
-- Sub-label (e.g. "1 min") in DM Sans 13px `--text-secondary`.
-
-### Modals (Game Result)
-- Overlay: `rgba(13,17,23,0.85)` backdrop, `backdrop-filter: blur(8px)`.
-- Panel: `--surface-3` background, 16px border-radius, max-width 440px, centered.
-- **Result headline**: Playfair Display 36px, color based on outcome:
-  - Win → `--success` (#3FB950)
-  - Loss → `--error` (#DA3633)
-  - Draw → `--accent` (#D4A843)
-- Sub-text (e.g. "by checkmate"): DM Sans 14px `--text-secondary`.
-- Buttons stacked vertically: "New Game" (primary), "Rematch" (secondary), "Analysis" (ghost).
-
-### Navigation Topbar
-- 56px height, `--surface-1` background, `1px solid --border` bottom.
-- **Logo**: "♟ Knight's Court" — knight SVG icon `--accent` + Playfair Display 22px `--text-primary`.
-- Nav links: DM Sans 14px weight 700 `--text-secondary`. Active link: `--text-primary` + `2px --accent` underline.
-- Right side: XP/streak badge, notification bell, avatar (32px circle with amber ring if in active game).
-
-### Inputs & Search
-- 40px height, `--surface-2` background, 6px border-radius, 12px padding.
-- `--text-muted` placeholder, `--text-primary` input text.
-- No border at rest. Focus: `1.5px solid --accent`.
-- Focus glow: `box-shadow: 0 0 0 3px --accent-glow`.
-
-### Tooltips
-- `--surface-4` background, `--text-primary` text, 4px border-radius, 8px/12px padding, DM Sans 12px.
-- Shadow: `0 4px 12px rgba(0,0,0,0.5)`.
-- Appear on 150ms delay to avoid flicker on fast hovers.
-
----
-
-## Spacing
-
-- **Base unit**: 8px
-- **Scale**: 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96
-- **Component internal padding**: 12px compact, 16px standard, 24px spacious.
-- **Section gaps**: 24px between sidebar sections, 40px between major layout zones.
-- **Board-to-sidebar gap**: 24px.
-- **Sidebar width**: 320px (fixed). Collapses to 0 on mobile (board takes full width, move list goes below).
-
----
-
-## Border Radius
-
-| Value | Where used |
-|---|---|
-| 4px | Inputs, individual board-adjacent elements, badges |
-| 6px | Icon buttons, chips, info bars |
-| 8px | Clocks, move list container, small cards |
-| 12px | Modals, lobby cards, player panels |
-| 9999px | Pill buttons, avatars, time-control selector |
-
----
-
-## Elevation System
-
-No shadows on dark surfaces. Elevation = surface brightness.
-
-| Level | Token | Hex | Example |
+### Surface / Background Tokens
+| Tailwind Class | CSS Variable | Hex | Usage |
 |---|---|---|---|
-| 0 | `--surface-0` | `#0D1117` | Page background |
-| 1 | `--surface-1` | `#161B22` | Sidebar, topnav, panels |
-| 2 | `--surface-2` | `#1C2333` | Hover state panels, inputs |
-| 3 | `--surface-3` | `#243048` | Modals, result overlays |
-| 4 | `--surface-4` | `#2D3A55` | Tooltips, top-of-stack elements |
+| `bg-background` / `bg-backgroundBoxDarker` | `--surface-0` | `#0D1117` | Root page background, "best move" bar |
+| `bg-backgroundBox` | `--surface-1` | `#161B22` | Main panels, sidebar, nav, cards |
+| `bg-backgroundBoxHover` | `--surface-2` | `#1C2333` | Hover states on panels |
+| `bg-backgroundBoxBox` | `--surface-1` | `#161B22` | Inputs, dropdowns, nested card surfaces |
+| `bg-backgroundBoxBoxHover` | `--surface-2` | `#1C2333` | Hover on nested surfaces |
+| `bg-backgroundBoxBoxDisabled` | `rgba(36,48,72,0.2)` | — | Disabled/subtle inset areas |
+| `bg-backgroundProfileBlack` | `--surface-1` | `#161B22` | Toggle-group pill wrapper, sub-containers |
+| `bg-backgroundBoxBoxHighlighted` | `--accent` | `#D4A843` | **Primary CTA fill, active toggle state** |
+| `bg-backgroundBoxBoxHighlightedHover` | `--accent-hover` | `#E8C060` | Primary CTA hover fill |
+
+### Text Tokens
+| Tailwind Class | CSS Variable | Hex | Usage |
+|---|---|---|---|
+| `text-foreground` | `--text-primary` | `#F0F6FC` | Primary content, headings, active elements |
+| `text-foregroundGrey` | `--text-secondary` | `#8B949E` | Labels, secondary content, inactive moves |
+| `text-foregroundHighlighted` | `--accent` | `#D4A843` | Active move in list, hover states, links |
+| `text-foregroundBlack` | `--text-muted` | `#484F58` | Timestamps, disabled, hints |
+
+### Border Tokens
+| Tailwind Class | CSS Variable | Hex | Usage |
+|---|---|---|---|
+| `border-border` | `--border` | `#21262D` | Panel edges, input default state |
+| `border-borderHighlighted` | `--accent` | `#D4A843` | Input focus, active depth button |
+| `border-neutral-600` | — | `#525252` | Section divider `<hr>` elements |
+| `border-neutral-700` | — | `#404040` | Secondary borders in modals |
+| `border-neutral-800` | — | `#262626` | Subtle card outlines |
+| `border-transparent` | — | transparent | Toggle-group pill wrapper (no visible border) |
+
+### Radius Tokens
+| Tailwind Class | CSS Variable | Value | Usage |
+|---|---|---|---|
+| `rounded-borderRoundness` | `--borderRoundness` | `4px` | Inputs, buttons, cards, move list items |
+| `rounded-borderExtraRoundness` | `--borderExtraRoundness` | `8px` | Loading cards, modal panels |
+| `rounded-lg` | — | `8px` | Toggle-group pill wrappers |
+| `rounded-md` | — | `6px` | Individual toggle buttons inside pill |
+| `rounded-full` | — | `9999px` | Toggle switches, spinner, avatars |
+
+### Move Rating Color Tokens
+| Tailwind Class | Hex | Move Type |
+|---|---|---|
+| `text-highlightBrilliant` | `#04b8ad` | Brilliant |
+| `text-highlightGreat` | `#5c8bb0` | Great |
+| `text-highlightBest` / `text-highlightExcellent` | `#96bc4b` | Best / Excellent |
+| `text-highlightGood` | `#95af8a` | Good |
+| `text-highlightBook` | `#a98866` | Book move |
+| `text-highlightInaccuracy` | `#f7c045` | Inaccuracy |
+| `text-highlightMistake` | `#e58f2a` | Mistake |
+| `text-highlightMiss` | `#ee6b55` | Miss |
+| `text-highlightBlunder` | `#ca3531` | Blunder |
+
+### Functional Colors
+| Tailwind Class | CSS Variable | Hex | Usage |
+|---|---|---|---|
+| `bg-winGreen` | `--success` | `#3FB950` | Win result indicator |
+| `bg-lossRed` | `--error` | `#DA3633` | Loss result indicator, error toasts |
+| `text-warning` | `--warning` | `#D29922` | Warning toasts |
+| `fill-backgroundBoxBoxHighlighted` | `--accent` | `#D4A843` | SVG fills (lens icon, arrows) |
 
 ---
 
-## Motion & Animation
+## 3. Layout & Breakpoints
 
-- **Default easing**: `cubic-bezier(0.16, 1, 0.3, 1)` (snappy ease-out).
-- **Duration scale**: 100ms (micro) · 200ms (component) · 350ms (page/modal).
-- **Piece movement**: CSS `transition: transform 120ms ease-out` when the board updates from a remote move. User-dragged pieces have no transition.
-- **Clock tick** (critical): `@keyframes pulse-border` — 0.5s cycle, amber → transparent → amber on the clock container border.
-- **Check flash**: King square gets `@keyframes check-flash` — red opacity 0→0.65→0.65→0 over 400ms on check.
-- **Card hover lift**: `transform: translateY(-2px)` + surface brighten, 200ms ease.
-- **Modal entry**: `transform: scale(0.95) → 1.0` + `opacity: 0 → 1`, 300ms snappy ease-out.
-- **Move list scroll**: Auto-scroll to active move using `scrollIntoView({ behavior: 'smooth', block: 'nearest' })`.
+### Breakpoints (from `tailwind.config.ts`)
+| Name | px | Effect |
+|---|---|---|
+| `navTop` | 516px | Nav moves from side to top |
+| `vertical` | 1100px | Board + sidebar go side-by-side |
+| `reduceNav` | 1280px | Nav shows text labels |
+| `reduceSummary` | 1669px | Summary switches to compact layout |
 
----
+### Overall Structure (≥ 1100px `vertical`)
+```
+┌─────────────────────────────────────────────────────┐
+│  NAV (left sidebar, flex-col, bg-backgroundBox)     │
+├───────────────────────┬─────────────────────────────┤
+│                       │                             │
+│   GAME AREA           │   MENU PANEL                │
+│   (board + eval bar)  │   max-w-[500px]             │
+│                       │   min-w-[400px]             │
+│                       │   bg-backgroundBox          │
+│                       │                             │
+└───────────────────────┴─────────────────────────────┘
+```
 
-## Responsive Behavior
-
-| Breakpoint | Layout change |
-|---|---|
-| `> 1100px` | Full two-column layout (board + sidebar) |
-| `768–1100px` | Sidebar narrows to 260px; clocks shown inline above/below board |
-| `< 768px` | Single column: board full-width, sidebar panels collapse below |
-| `< 480px` | Coordinates hidden; control strip becomes floating bottom bar |
-
----
-
-## CSS Variable Reference (Root)
-
-```css
-:root {
-  /* Accent */
-  --accent:           #D4A843;
-  --accent-hover:     #E8C060;
-  --accent-muted:     #A07830;
-  --accent-glow:      rgba(212, 168, 67, 0.18);
-
-  /* Surfaces */
-  --bg:               #0D1117;
-  --surface-0:        #0D1117;
-  --surface-1:        #161B22;
-  --surface-2:        #1C2333;
-  --surface-3:        #243048;
-  --surface-4:        #2D3A55;
-
-  /* Text */
-  --text-primary:     #F0F6FC;
-  --text-secondary:   #8B949E;
-  --text-muted:       #484F58;
-  --text-accent:      #D4A843;
-
-  /* Board */
-  --sq-light:         #E8DCC8;
-  --sq-dark:          #4A6FA5;
-  --sq-highlight-from: rgba(212, 168, 67, 0.55);
-  --sq-highlight-to:   rgba(212, 168, 67, 0.35);
-  --sq-selected:       rgba(212, 168, 67, 0.70);
-  --sq-legal-move:     rgba(0, 0, 0, 0.20);
-  --sq-legal-capture:  rgba(212, 168, 67, 0.45);
-  --sq-check:          rgba(220, 50, 50, 0.65);
-
-  /* Borders */
-  --border:           #21262D;
-  --border-subtle:    #161B22;
-
-  /* Functional */
-  --success:          #3FB950;
-  --warning:          #D29922;
-  --error:            #DA3633;
-  --info:             #4A9EDB;
-}
+### Menu Panel Inner Structure (top → bottom)
+```
+┌─────────────────────────────┐
+│  TAB BAR (menu tabs)        │
+├─────────────────────────────┤
+│  TAB CONTENT (scrollable)   │
+│  - Form / SelectGame        │
+│  - Loading                  │
+│  - Summary / Moves          │
+├─────────────────────────────┤
+│  GAME BUTTONS (nav strip)   │
+└─────────────────────────────┘
 ```
 
 ---
 
-## Key Differentiators from Chess.com
+## 4. Component Patterns
 
-| Element | Chess.com | Knight's Court |
-|---|---|---|
-| Dark square color | `#769656` (green) | `#4A6FA5` (steel blue) |
-| Light square color | `#EEEED2` / `#F0D9B5` | `#E8DCC8` (aged parchment) |
-| Background tone | Warm brown `#312E2B` | Deep navy `#0D1117` |
-| Primary accent | Green `#81B64C` | Amber gold `#D4A843` |
-| Highlight squares | Green/yellow tints | Amber tints |
-| Display font | Proprietary / none | Playfair Display |
-| Body font | Source Sans / system | DM Sans |
-| Notation font | Monospace generic | JetBrains Mono |
-| Surface palette | Brown-gray family | Navy-slate family |
-| Button style | Green rounded-rect | Amber pill |
+### 4.1 Primary CTA Button
+Used for: **"Analyze"**, **"List Games"**, **"Get AI Insights"**
+
+```tsx
+<input
+  type="submit"
+  className="w-[85%] h-16 cursor-pointer rounded-borderExtraRoundness text-2xl
+             bg-backgroundBoxBoxHighlighted hover:bg-backgroundBoxBoxHighlightedHover
+             transition-all font-extrabold hover:shadow-shadowBoxBoxHighlighted"
+/>
+// OR as <button>:
+<button className="w-full bg-backgroundBoxBoxHighlighted hover:bg-backgroundBoxBoxHighlightedHover
+                   shadow-md font-bold py-3 px-4 rounded-borderRoundness
+                   transition-all duration-150 ease-out flex flex-row justify-center
+                   items-center gap-2 active:scale-[0.98]">
+```
+
+- **Fill**: `bg-backgroundBoxBoxHighlighted` (#D4A843 gold)
+- **Hover fill**: `bg-backgroundBoxBoxHighlightedHover` (#E8C060)
+- **Text**: inherits white (do NOT add `text-surface-0` or dark text)
+- **Active**: `active:scale-[0.98]`
+- **Disabled**: use `disabled` attribute; no extra class needed
+
+### 4.2 Toggle Segment Group (segmented control)
+Used for: **BEGINNER/ADVANCED**, **GROQ/GEMINI**
+
+```tsx
+{/* Pill wrapper */}
+<div className="flex flex-row gap-2 bg-backgroundProfileBlack p-1 rounded-lg border border-transparent">
+  <button
+    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all duration-150 ease-out active:scale-95 ${
+      isActive
+        ? "bg-backgroundBoxBoxHighlighted shadow-md"
+        : "text-foregroundGrey hover:text-white hover:bg-white/[0.04]"
+    }`}
+  >
+    LABEL
+  </button>
+</div>
+```
+
+- Wrapper: `bg-backgroundProfileBlack p-1 rounded-lg border border-transparent`
+- Active segment: `bg-backgroundBoxBoxHighlighted shadow-md` (no explicit text color)
+- Inactive segment: `text-foregroundGrey hover:text-white hover:bg-white/[0.04]`
+- **Never add a visible border to the wrapper** — use `border-transparent`
+
+### 4.3 Standard Input / Textarea
+Used for: **PGN/FEN input**, **username input**, **API key fields**
+
+```tsx
+<textarea
+  className="w-[85%] px-2 py-[13px] text-xl font-bold rounded-borderRoundness
+             border-border hover:border-borderHighlighted focus:border-borderHighlighted
+             border-solid border-[1px] bg-backgroundBoxBox outline-none
+             placeholder:text-placeholder placeholder:font-normal resize-none
+             transition-colors"
+/>
+// Compact variant (settings):
+<input
+  className="bg-backgroundProfileBlack text-white p-2 rounded-borderRoundness text-sm
+             outline-none border border-transparent focus:border-backgroundBoxBoxHighlighted
+             transition-colors"
+/>
+```
+
+- Rest border: `border-border` (#21262D)
+- Hover/focus border: `border-borderHighlighted` = `border-backgroundBoxBoxHighlighted` (#D4A843)
+- Background: `bg-backgroundBoxBox` (panels) or `bg-backgroundProfileBlack` (settings)
+- No focus glow ring — border color change only
+- `outline-none` always
+
+### 4.4 Dropdown / Format Selector Button
+Used for: **format picker** (Chess.com / Lichess / PGN / FEN)
+
+```tsx
+<button
+  className="flex flex-row gap-1 items-center justify-center w-full h-14
+             rounded-borderRoundness text-xl bg-backgroundBoxBox
+             hover:bg-backgroundBoxBoxHover hover:text-foregroundHighlighted
+             transition-colors font-bold relative"
+>
+```
+
+- Height: `h-14` (56px) for main selector
+- Grid items: `h-12` (48px), `text-md`, same hover pattern
+- Active depth: `border-[2px] border-backgroundBoxBoxHighlighted` (no background change)
+
+### 4.5 Toggle Switch (boolean)
+Used for: **Auto AI Review**
+
+```tsx
+<div
+  onClick={toggle}
+  className={`w-10 h-5 rounded-full relative cursor-pointer transition-all duration-200 ${
+    isOn
+      ? 'bg-backgroundBoxBoxHighlighted shadow-sm shadow-backgroundBoxBoxHighlighted/30'
+      : 'bg-white/[0.06] hover:bg-white/[0.1]'
+  }`}
+>
+  <div className={`absolute top-[4px] w-3 h-3 rounded-full bg-white transition-all duration-200 ${isOn ? 'left-[24px]' : 'left-[4px]'}`} />
+</div>
+```
+
+- Track on: `bg-backgroundBoxBoxHighlighted`
+- Track off: `bg-white/[0.06]` (no border)
+- Knob: `w-3 h-3 rounded-full bg-white` — `top-[4px]`, `left-[4px]` off / `left-[24px]` on
+
+### 4.6 Menu Tab Bar
+Used for: **Analyze / Choose Game / Summary / Moves** tabs
+
+```tsx
+<button
+  className={`w-full flex flex-col gap-1 group items-center py-2 text-sm outline-none ${
+    isSelected
+      ? 'text-foreground'
+      : 'bg-backgroundBoxBoxDisabled text-foregroundGrey cursor-pointer transition-colors hover:text-foregroundHighlighted'
+  }`}
+>
+  {icon} {label}
+</button>
+```
+
+- Active tab: `text-foreground`, no background (transparent = same as panel)
+- Inactive tab: `bg-backgroundBoxBoxDisabled text-foregroundGrey`
+- Icon: `fill-foreground` active / `fill-foregroundGrey group-hover:fill-foregroundHighlighted` inactive
+- No border, no underline — background contrast creates the active state
+
+### 4.7 Section Divider
+```tsx
+<hr className="border-neutral-600 w-[85%]" />
+```
+Always `border-neutral-600`, always `w-[85%]` for section breaks inside panels.
+
+### 4.8 Panel / Card Container
+Used for: **AI Settings**, any grouped section
+
+```tsx
+<div className="flex flex-col gap-3 p-3 bg-backgroundBox rounded-borderRoundness border border-neutral-800">
+  <span className="font-bold text-foregroundGrey text-sm uppercase tracking-wider">Section Title</span>
+  {/* content */}
+</div>
+```
+
+- Background: `bg-backgroundBox`
+- Border: `border-neutral-800` (subtle, not accent)
+- Title: `font-bold text-foregroundGrey text-sm uppercase tracking-wider`
+
+### 4.9 Move List Row
+```tsx
+<li className="flex flex-row text-foregroundGrey items-center w-full">
+  <span className="font-bold w-[33px]">{n}.</span>
+  <div className="flex flex-row text-lg font-extrabold flex-grow">
+    {/* each half-move: */}
+    <button
+      className={`rounded-borderRoundness outline-none border-b-2 text-left px-2 w-fit
+        ${isSelected ? 'bg-backgroundBoxBox border-backgroundBoxBoxHover' : 'border-transparent'}
+        ${ratingColorClass}`}
+    >
+      {san}
+    </button>
+  </div>
+</li>
+```
+
+- Move number column: `w-[33px] font-bold text-foregroundGrey`
+- Selected move: `bg-backgroundBoxBox border-b-2 border-backgroundBoxBoxHover`
+- Unselected: `border-transparent`
+- Rating colors: use `text-highlight*` tokens (see §2)
+- Active (not rated, just current): `text-foregroundHighlighted`
+
+### 4.10 "Best Move" Bar
+Shown above the move list when a better move exists.
+
+```tsx
+<div className="bg-backgroundBoxDarker w-full">
+  <div className="w-[85%] font-extrabold text-highlightBest mx-auto flex flex-row items-center gap-2 py-2">
+    <FormatEval best smaller ... />
+    <RatingSVG rating="best" size={22} />
+    {bestMoveSan} is best
+  </div>
+</div>
+```
+
+- Background: `bg-backgroundBoxDarker` (darkest surface, one level below panels)
+- Text: `text-highlightBest` (#96bc4b)
+
+### 4.11 Game Control Buttons (navigation strip)
+```tsx
+<div className="w-[85%] rounded-borderRoundness p-3 flex flex-row justify-around items-center">
+  <SkipGame class="h-[45px] rotate-180 fill-foregroundGrey transition-colors hover:fill-foregroundHighlighted" />
+  <NextMove class="h-[25px] rotate-180 fill-foregroundGrey transition-colors hover:fill-foregroundHighlighted" />
+  {/* play/pause */}
+  <NextMove class="h-[25px] fill-foregroundGrey transition-colors hover:fill-foregroundHighlighted" />
+  <SkipGame class="h-[45px] fill-foregroundGrey transition-colors hover:fill-foregroundHighlighted" />
+</div>
+```
+
+- All icons: `fill-foregroundGrey` at rest, `fill-foregroundHighlighted` on hover
+- Transition: `transition-colors` (no duration class needed)
+- No button background — icon-only ghost style
 
 ---
 
-## Do's and Don'ts
+## 5. Loading States
 
-**Do:**
-- Always keep the board the largest, most prominent element on screen.
-- Use Playfair Display exclusively for "moment" typography — results, titles, the logo.
-- Reserve `--accent` (amber) for interactive affordances only: buttons, active states, selected squares.
-- Keep the sidebar minimal — it should feel like a scoresheet, not a control panel.
-- Use JetBrains Mono strictly for data that must align: clocks, move notation, coordinates.
-- Apply `--sq-check` pulse sparingly — the king in check is the most emotionally important visual event.
+### 5.1 Stockfish Analysis Loading (loading.tsx)
+```tsx
+<div className="flex flex-col flex-grow">
+  {/* header strip */}
+  <div className="text-lg font-bold text-foregroundGrey px-5 pb-5 w-full">
+    Analyzing{ellipsis}
+  </div>
+  <hr className="border-neutral-600" />
+  {/* centered card */}
+  <div className="flex-grow flex flex-col justify-center items-center relative">
+    <div className="w-[70%] bg-backgroundBox relative overflow-hidden
+                    rounded-borderExtraRoundness text-lg text-foregroundGrey
+                    flex flex-col gap-14 pb-4 pt-14 items-center">
+      <div className="w-48 flex flex-col items-center gap-4 text-center">
+        <Lens class="animate-[pulse_1.25s_...] fill-backgroundBoxBoxHighlighted" size={60} />
+        <span className="text-xl text-foreground font-bold">{format}</span>
+        <span className="w-full whitespace-nowrap">Analyzing Game{ellipsis}</span>
+      </div>
+      <button className="hover:text-foreground transition-colors">Cancel</button>
+      <LoadingBar progress={progress} />
+    </div>
+  </div>
+</div>
+```
 
-**Don't:**
-- Don't use brown, tan, beige, or green as any UI surface color — those belong to chess.com.
-- Don't use amber for large fills or backgrounds — it should always feel like a highlight, never the canvas.
-- Don't use light mode. This is a dark-first system; there is no light theme.
-- Don't render move notation in a proportional font — column alignment in the move list requires monospace.
-- Don't animate pieces during user drag — only animate opponent moves that arrive from the server.
-- Don't overcrowd the board with UI chrome — no floating toolbars over the board surface.
+- **`whitespace-nowrap` is mandatory on animated text** — prevents layout shift as dots animate
+- Container: `w-48` minimum, `text-center` on the inner flex column
+- Icon: gold pulse (`fill-backgroundBoxBoxHighlighted`)
+- Card: `w-[70%] bg-backgroundBox rounded-borderExtraRoundness`
+
+### 5.2 API Fetch Loading (selectChessCom.tsx `Loading`)
+```tsx
+<div className="w-56 flex flex-col items-center gap-4 text-center">
+  <Files className="animate-[pulse_...]" size={60} />
+  <span className="text-xl text-foreground font-bold">{whatIsLoading}</span>
+  <span className="w-full whitespace-nowrap">Fetching api{ellipsis}</span>
+</div>
+```
+
+- Same pattern as above: `w-56`, `text-center`, `whitespace-nowrap`
+
+### 5.3 Inline Loading (`SimpleLoading`)
+```tsx
+<div className="font-extrabold text-2xl animate-[pulse_...] w-56 my-4 m-auto whitespace-nowrap text-center">
+  Loading {whatIsLoading}{ellipsis}
+</div>
+```
+
+- `whitespace-nowrap` is mandatory
+- `w-56` minimum width to fit the longest animated string
+
+---
+
+## 6. Toast Notifications (PageErrors)
+
+Toasts appear **bottom-right**, stacked, auto-dismiss after 7.5s.
+
+```tsx
+<div
+  style={{ backgroundColor: type === 'error' ? 'var(--error)' : type === 'warning' ? 'var(--warning)' : 'var(--highlightBrilliant)' }}
+  className="p-3 text-xl select-text z-[999] text-white font-bold
+             rounded-borderRoundness hover:scale-105 will-change-transform
+             transition-all max-w-96"
+>
+  {title}
+  <div className="text-base opacity-85 mt-2">{description}</div>
+</div>
+```
+
+- **All toast text is always `text-white`** — no matter the background
+- Error background: `var(--error)` = `#DA3633`
+- Warning background: `var(--warning)` = `#D29922`
+- Success background: `var(--highlightBrilliant)` = `#04b8ad` (teal)
+- Description: `text-base opacity-85 mt-2`
+- z-index: `z-[999]`
+- Hover: `hover:scale-105`
+
+---
+
+## 7. Typography
+
+Fonts are configured via Next.js `next/font` and exposed as CSS variables:
+- `var(--font-display)` → Playfair Display (display/serif)
+- `var(--font-sans)` → DM Sans (body/UI)
+- `var(--font-mono)` → JetBrains Mono (notation/clocks)
+
+### Usage Rules
+| Element | Font | Class |
+|---|---|---|
+| App logo, major headings | Playfair Display | `font-display` or `h1/h2/h3` |
+| All UI text, labels, buttons | DM Sans | default (`body` inherits it) |
+| Move notation, clocks, evals | JetBrains Mono | `font-mono` or `.monospace` |
+
+### Text Size Patterns
+| Role | Classes |
+|---|---|
+| Section label | `text-sm font-bold text-foregroundGrey uppercase tracking-wider` |
+| Field label | `text-[10px] font-bold text-foregroundGrey uppercase` |
+| Primary button | `text-2xl font-extrabold` |
+| Secondary button | `text-xs font-bold` |
+| Move notation | `text-lg font-extrabold` |
+| Body/description | `text-sm text-foregroundGrey` |
+| Small label | `text-[10px]` or `text-xs` |
+
+---
+
+## 8. Transitions & Animation
+
+| Pattern | Classes |
+|---|---|
+| Color changes (hover) | `transition-colors` |
+| All properties | `transition-all duration-150 ease-out` |
+| Button press | `active:scale-95` or `active:scale-[0.98]` |
+| CTA hover lift | `hover:shadow-shadowBoxBoxHighlighted` |
+| Animated spinner | `animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full` |
+| Pulsing icon | `animate-[pulse_1.25s_cubic-bezier(0.4,_0,_0.6,_1)_infinite;]` |
+
+---
+
+## 9. The Nav Sidebar
+
+```tsx
+<nav className="flex flex-col navTop:h-screen navTop:w-max w-screen relative">
+  <div className="navTop:pt-1 navTop:pb-6 navTop:h-full w-full overflow-y-auto
+                  bg-backgroundBox flex navTop:flex-col flex-row justify-between
+                  select-none navTop:items-start items-stretch">
+```
+
+- Background: `bg-backgroundBox` (surface-1)
+- Nav links: `text-lg font-bold navTop:px-3 navTop:py-2 p-1.5 hover:bg-backgroundBoxHover hover:text-foregroundHighlighted transition-colors`
+- Active page link — no special active class; use next/link, router detects it
+- Icon images: `opacity-70 group-hover:opacity-100 transition-colors`
+
+---
+
+## 10. Game Selection (Chess.com / Lichess)
+
+### Archive List Button
+```tsx
+<button
+  className={`${isHovered || isSelected ? 'text-foregroundHighlighted' : 'text-foregroundGrey'}
+    hover:bg-backgroundBoxHover w-full tracking-wide transition-colors
+    text-2xl px-8 py-4 flex flex-row justify-between items-center`}
+>
+```
+
+### Game Row (table)
+```tsx
+<tr className="border-b-[1px] cursor-pointer select-none border-border
+               transition-colors hover:bg-backgroundBoxHover">
+```
+
+- Username link: `text-backgroundBoxBoxHighlightedHover text-3xl font-bold hover:underline`
+- Result indicator square: `h-4 w-4 rounded-borderRoundness` with `bg-winGreen` / `bg-lossRed` / `bg-foregroundGrey`
+
+---
+
+## 11. Modals (Perspective Picker)
+
+```tsx
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div className="bg-backgroundProfileBlack border border-neutral-700 p-6 rounded-lg shadow-xl w-80 text-center">
+    <h3 className="text-white font-bold mb-4">...</h3>
+    {/* White option */}
+    <button className="bg-white text-black py-2 rounded-md font-bold hover:bg-gray-200">
+    {/* Black option */}
+    <button className="bg-neutral-800 text-white py-2 rounded-md font-bold border border-neutral-600 hover:bg-neutral-700">
+    {/* Cancel */}
+    <button className="mt-2 text-foregroundGrey hover:text-white text-sm">
+  </div>
+</div>
+```
+
+- Overlay: `fixed inset-0 z-50 bg-black bg-opacity-50`
+- Panel: `bg-backgroundProfileBlack border border-neutral-700 rounded-lg p-6 shadow-xl`
+- z-index: `z-50` for modals (toasts use `z-[999]`)
+
+---
+
+## 12. AI Settings Panel (aiSettings.tsx)
+
+```tsx
+<div className="flex flex-col gap-3 p-3 bg-backgroundBox rounded-borderRoundness border border-neutral-800">
+  <span className="font-bold text-foregroundGrey text-sm uppercase tracking-wider">AI Coach Settings</span>
+
+  {/* Provider / Coaching Mode toggles — use the Toggle Segment Group pattern (§4.2) */}
+
+  {/* API Key input */}
+  <input
+    type="password"
+    className="bg-backgroundProfileBlack text-white p-2 rounded-borderRoundness text-sm
+               outline-none border border-transparent focus:border-backgroundBoxBoxHighlighted transition-colors"
+  />
+
+  {/* Auto AI Review toggle — use the Toggle Switch pattern (§4.5) */}
+</div>
+```
+
+---
+
+## 13. Critical Rules
+
+**Always do:**
+- Use `whitespace-nowrap` on any text that animates or appends characters (ellipsis effects)
+- Use `transition-colors` for hover color changes, `transition-all duration-150 ease-out` for transforms
+- Keep `border-transparent` on toggle-group wrappers — never a visible border
+- Use `text-white` on all toast text regardless of background color
+- Use `w-[85%]` for content within the menu panel (consistent inset)
+- Use `outline-none` on all interactive elements that have custom focus styles
+
+**Never do:**
+- Never hardcode hex colors in className — always use a Tailwind token from §2
+- Never add visible borders to toggle-group pill wrappers
+- Never use `text-surface-0` or dark text on gold (`bg-backgroundBoxBoxHighlighted`) buttons
+- Never add a `border-neutral-850` class — it doesn't exist
+- Never use amber/gold as a large background fill — it's always a highlight or accent
+- Never use green, brown, or earth tones as UI surfaces
+- Never put box-shadows on dark surface cards — elevation = brightness step only
+- Never skip `whitespace-nowrap` on animating text elements
+
+**Consistency checklist for any new component:**
+1. Does it use only tokens from §2?
+2. If it's a CTA, does it use the §4.1 pattern?
+3. If it's a segmented toggle, does it use the §4.2 pattern?
+4. If it contains animated text, does it have `whitespace-nowrap`?
+5. Are all toast messages using `text-white`?
+6. Is the container width `w-[85%]` for menu panel content?
+
+---
+
+## 14. Puzzle & Blitz Tab Design System (Unique Elements)
+
+The Puzzle & Blitz page shares the global layout layout structure but features highly interactive overlays and specialized stats layouts. **Where design details or color themes conflict between tabs, the Analyze Tab's Knight's Court design system tokens always take priority.**
+
+### 14.1 Interactive Board Overlays
+Used to show feedback directly on the chess board.
+
+* **Feedback Flashes (Green/Red):**
+  * Green flash (Correct Move): `absolute inset-0 bg-green-500/30 z-[110] pointer-events-none animate-pulse`
+  * Red flash (Incorrect Move): `absolute inset-0 bg-red-500/30 z-[110] pointer-events-none animate-pulse`
+* **Ping Hint Indicator:**
+  * Displays a yellow ring animation centered on the source square of the correct move.
+  * Class: `absolute z-[105] bg-yellow-400/40 rounded-full border-4 border-yellow-400 animate-ping pointer-events-none`
+* **Victory / Success Badge:**
+  * A bouncing message overlayed at the top of the board container when solved.
+  * Container: `absolute top-[-50px] z-[100] animate-bounce`
+  * Text Badge: `bg-winGreen text-white px-6 py-2 rounded-full font-bold text-xl shadow-lg border-2 border-white/20`
+
+### 14.2 Solution Progress Tracker (Steps Indicator)
+Shows the player how many correct moves they have played vs how many are remaining.
+
+```tsx
+<div className="flex gap-2 mt-4">
+  {puzzle.solution.map((_, i) => (
+    <div
+      key={i}
+      className={`w-3 h-3 rounded-full ${
+        i < currentMoveIndex ? 'bg-green-500' : 'bg-gray-600'
+      }`}
+    />
+  ))}
+</div>
+```
+* Solved steps: `bg-green-500`
+* Remaining steps: `bg-gray-600` (subtle gray)
+
+### 14.3 Specialized Action Buttons
+* **Hint Button:**
+  * Class: `flex items-center justify-center gap-2 bg-backgroundBoxBox hover:bg-backgroundBoxBoxHover text-white py-4 rounded-borderRoundness font-bold transition-all disabled:opacity-50 border-border border-[1px] hover:text-foregroundHighlighted`
+* **Give Up Button (Dark Red Style):**
+  * Class: `flex items-center justify-center gap-2 bg-[#2a1a1a] hover:bg-[#3d1a1a] text-lossRed py-4 rounded-borderRoundness font-bold transition-all disabled:opacity-50 border-lossRed border-[1px]`
+* **Next Puzzle Button (Pulses Gold):**
+  * Class: `w-full bg-backgroundBoxBoxHighlighted hover:bg-backgroundBoxBoxHighlightedHover text-white py-4 rounded-borderRoundness font-extrabold text-xl transition-all animate-pulse shadow-shadowBoxBoxHighlighted`
+
+### 14.4 Progress & Statistics Cards (Grid Layout)
+Progress details and stats are shown in a two-column card layout.
+
+```tsx
+<div className="grid grid-cols-2 gap-3">
+  <div className="bg-backgroundBoxBox p-4 rounded-borderRoundness flex flex-col gap-1 border-border border-[1px]">
+    <span className="text-xs font-bold text-foregroundGrey flex items-center gap-1">
+      {/* SVG Icon */}
+      SOLVED TODAY
+    </span>
+    <span className="text-2xl font-extrabold text-white">{solvedCount}</span>
+  </div>
+</div>
+```
+* **Stat Cards:**
+  * Box styling: `bg-backgroundBoxBox p-4 rounded-borderRoundness border-border border-[1px]`
+  * Labels: `text-xs font-bold text-foregroundGrey`
+  * Values: `text-2xl font-extrabold` with color mapping matching status (Streak uses `text-highlightBest`, Accuracy uses `text-winGreen`, Totals use `text-white`).
+
+### 14.5 Theme & Tag Chips
+Used to label the attributes or tactical motifs of puzzles.
+
+```tsx
+<span className="bg-backgroundBoxBoxHover text-foregroundGrey px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+  {themeName}
+</span>
+```
+* Class: `bg-backgroundBoxBoxHover text-foregroundGrey px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider`
+
+### 14.6 Theme Conflict & Dropdown Override Rules
+> [!IMPORTANT]
+> **Priority Rule:** In the legacy puzzle layout, some filters and popover menus used to employ warm brown backgrounds (such as `bg-[#262421]`). 
+> Under Knight's Court, **dropdowns and floating menus MUST ALWAYS inherit the deep navy palette** instead of the brown theme.
+> * Dropdown lists must use `bg-backgroundBox` (`--surface-1` or `#161B22`) or `bg-backgroundBoxBoxHover` (`--surface-2` or `#1C2333`).
+> * Dropdown item buttons must use `text-white` with `hover:bg-backgroundBoxBoxHover hover:text-foregroundHighlighted`.
+> * NEVER introduce new warm brown `bg-[#262421]`, `bg-[#312E2B]` or light gray panels in any part of the puzzle or game tabs. Keep it Intimate, Focused, Slate Blue, and Gold!
+

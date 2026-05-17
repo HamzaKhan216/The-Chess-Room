@@ -30,8 +30,8 @@ export function useStockfish(setErrors: (title: string, message: string) => void
         const hash = Math.floor(getMem() / 4);
 
         const errorTimeout = setTimeout(() => 
-            setErrors('Engine Timeout', "The browser is having some troubles loading Stockfish. Try restarting the browser."), 
-        15000);
+            setErrors('Engine Timeout', "The browser is taking longer than expected to download the Chess Engine. If your connection is slow, it may take up to a minute on the first load (approx. 69 MB). Try waiting a bit longer or restarting your browser."), 
+        90000);
 
         prepareEngine(stockfish, threads, hash).then(() => {
             clearTimeout(errorTimeout);

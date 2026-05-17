@@ -49,10 +49,10 @@ export default function Loading(props: { format: string, analyzeController?: Abo
             <hr className="border-neutral-600" />
             <div className="flex-grow flex flex-col justify-center items-center relative">
                 <div className="w-[70%] bg-backgroundBox relative overflow-hidden rounded-borderExtraRoundness text-lg text-foregroundGrey flex flex-col gap-14 pb-4 pt-14 items-center">
-                    <div className="w-36 flex flex-col items-center gap-4">
+                    <div className="w-48 flex flex-col items-center gap-4 text-center">
                         <Lens class="animate-[pulse_1.25s_cubic-bezier(0.4,_0,_0.6,_1)_infinite;] scale-x-[-1] fill-backgroundBoxBoxHighlighted" size={60} />
                         <span className="text-xl text-foreground font-bold">{format.toUpperCase()}</span>
-                        <span className="w-full">Analyzing Game{ellipsis}</span>
+                        <span className="w-full whitespace-nowrap">Analyzing Game{ellipsis}</span>
                     </div>
                     <button onClick={cancel} className="hover:text-foreground transition-colors" type="button">Cancel</button>
                     <LoadingBar progress={progress} transitionTime={100} />

@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import GitHub from "../svg/github"
+
 import { useContext, useEffect, useRef } from "react"
 import Licenses from "../svg/license"
 import Settings from "./settings/settings"
@@ -40,7 +40,7 @@ export default function Nav() {
     }
 
     const botLinks: BotLinks[] = [
-        { label: "Source Code", href: "https://github.com/wdeloo/Brilliant-Chess", icon: (props: {className: string}) => <GitHub class={props.className} /> },
+
         { label: "Attributions", href: "/attributions", icon: (props: {className: string}) => <Licenses class={props.className} /> },
     ]
 

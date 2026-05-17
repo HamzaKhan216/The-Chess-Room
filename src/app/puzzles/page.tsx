@@ -36,6 +36,7 @@ export default function PuzzlesPage() {
 
   const fetchingRef = useRef(false);
   const initialFetchRef = useRef(false);
+  const sessionPlayedIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (!initialFetchRef.current) {
@@ -58,10 +59,17 @@ export default function PuzzlesPage() {
     fetchingRef.current = true;
 
     try {
-      // Limit excludeIds to recent solves + buffer to reduce URL length
-      const recentSolvedIds = stats?.solvedIds.slice(-50) || [];
+      // Limit excludeIds to recent solves + session played + buffer + current puzzle to reduce URL length and avoid repeats
+      const recentSolvedIds = stats?.solvedIds || [];
+      const currentId = puzzle ? [puzzle.id] : [];
       const bufferIds = puzzleBuffer.map(p => p.id);
-      const excludeIds = [...recentSolvedIds, ...bufferIds].join(',');
+      const combinedExcludes = Array.from(new Set([
+        ...recentSolvedIds,
+        ...sessionPlayedIdsRef.current,
+        ...bufferIds,
+        ...currentId
+      ])).slice(-200);
+      const excludeIds = combinedExcludes.join(',');
       
       const res = await fetch(`/api/puzzle?rating=${rating}${theme ? `&theme=${theme}` : ''}${excludeIds ? `&excludeIds=${excludeIds}` : ''}`);
       const data: any = await res.json();
@@ -100,9 +108,17 @@ export default function PuzzlesPage() {
     setFlash(null);
     setMove([]);
 
-    // Limit excludeIds to recent solves (last 100) to reduce URL length
-    const recentSolvedIds = stats?.solvedIds.slice(-100) || [];
-    const excludeIds = recentSolvedIds.join(',');
+    // Limit excludeIds to recent solves + session played + buffer + current puzzle to reduce URL length and avoid repeats
+    const recentSolvedIds = stats?.solvedIds || [];
+    const currentId = puzzle ? [puzzle.id] : [];
+    const bufferIds = puzzleBuffer.map(p => p.id);
+    const combinedExcludes = Array.from(new Set([
+      ...recentSolvedIds,
+      ...sessionPlayedIdsRef.current,
+      ...bufferIds,
+      ...currentId
+    ])).slice(-200);
+    const excludeIds = combinedExcludes.join(',');
 
     try {
       const res = await fetch(`/api/puzzle?rating=${r}${t ? `&theme=${t}` : ''}${excludeIds ? `&excludeIds=${excludeIds}` : ''}`);
@@ -138,6 +154,9 @@ export default function PuzzlesPage() {
   };
 
   const applyPuzzle = (data: PuzzleData) => {
+    if (!sessionPlayedIdsRef.current.includes(data.id)) {
+      sessionPlayedIdsRef.current.push(data.id);
+    }
     setPuzzle(data);
     const newChess = new Chess(data.fen);
     setChess(newChess);

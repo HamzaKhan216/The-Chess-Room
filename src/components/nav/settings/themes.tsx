@@ -1,7 +1,7 @@
 import { ConfigContext } from "@/context/config"
 import { useContext, useEffect } from "react"
 
-type boardThemeLabel = "Knight's Court" | "Green" | "Brown" | "Blue" | "Gray" | "Red" | "Purple" | "Orange"
+type boardThemeLabel = "Knight's Court" | "Green" | "Brown" | "Gray" | "Red" | "Purple" | "Orange"
 
 interface boardTheme {
     label: boardThemeLabel,
@@ -12,8 +12,8 @@ interface boardTheme {
 
 export const boardThemes: boardTheme[] = [
     { label: "Knight's Court", black: "#4A6FA5", white: "#E8DCC8", highlight: "#D4A843" },
+    { label: "Green", black: "#769656", white: "#eeeed2", highlight: "#ffff33" },
     { label: "Brown", black: "#b58863", white: "#f0d9b5", highlight: "#ffff33" },
-    { label: "Blue", black: "#4d6d92", white: "#ececd7", highlight: "#00a5ff" },
     { label: "Gray", black: "#4f4f4f", white: "#e3e3e3", highlight: "#ffff33" },
     { label: "Red", black: "#ba5546", white: "#f0d8bf", highlight: "#f8f893" },
     { label: "Purple", black: "#8877b7", white: "#efefef", highlight: "#7dacc9" },

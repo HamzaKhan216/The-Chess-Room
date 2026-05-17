@@ -126,16 +126,24 @@ export default function Summary(props: { moves: move[], container: HTMLElement, 
             <GameRating reducedSummary={reducedSummary} accuracy={accuracy} accuracyPhases={accuracyPhases} />
             
             <div className="w-[85%] flex flex-col gap-2 mt-2">
-                <div className="flex flex-row gap-2 bg-backgroundProfileBlack p-1 rounded-lg border border-neutral-700">
+                <div className="flex flex-row gap-2 bg-backgroundProfileBlack p-1 rounded-lg border border-transparent">
                     <button 
                         onClick={() => setAiMode("beginner")}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${aiMode === "beginner" ? "bg-highlightBrilliant text-white shadow-md scale-[1.02]" : "text-foregroundGrey hover:text-white"}`}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all duration-150 ease-out active:scale-95 ${
+                            aiMode === "beginner" 
+                            ? "bg-backgroundBoxBoxHighlighted shadow-md" 
+                            : "text-foregroundGrey hover:text-white hover:bg-white/[0.04]"
+                        }`}
                     >
                         BEGINNER
                     </button>
                     <button 
                         onClick={() => setAiMode("advanced")}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${aiMode === "advanced" ? "bg-highlightBrilliant text-white shadow-md scale-[1.02]" : "text-foregroundGrey hover:text-white"}`}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all duration-150 ease-out active:scale-95 ${
+                            aiMode === "advanced" 
+                            ? "bg-backgroundBoxBoxHighlighted shadow-md" 
+                            : "text-foregroundGrey hover:text-white hover:bg-white/[0.04]"
+                        }`}
                     >
                         ADVANCED
                     </button>
@@ -144,7 +152,7 @@ export default function Summary(props: { moves: move[], container: HTMLElement, 
                 <button
                     onClick={() => setShowPerspectiveModal(true)}
                     disabled={loadingAI}
-                    className="w-full bg-highlightBrilliant hover:bg-opacity-80 text-white font-bold py-3 px-4 rounded-borderRoundness transition-all flex flex-row justify-center items-center gap-2 mb-4 shadow-lg active:scale-95"
+                    className="w-full bg-backgroundBoxBoxHighlighted hover:bg-backgroundBoxBoxHighlightedHover shadow-md font-bold py-3 px-4 rounded-borderRoundness transition-all duration-150 ease-out flex flex-row justify-center items-center gap-2 mb-4 active:scale-[0.98]"
                 >
                 {loadingAI ? (
                     <>
